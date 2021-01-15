@@ -1,6 +1,5 @@
 package koral.sectorserver;
 
-import com.google.gson.Gson;
 import koral.sectorserver.listeners.PlayerJoin;
 import koral.sectorserver.listeners.PlayerMove;
 import org.bukkit.Bukkit;
@@ -18,6 +17,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
 
+// TODO Bungeee ma wysyłać zmienne do serwerów w trakcie przeładowywania pluginu
+
 public final class SectorServer extends JavaPlugin implements Listener, CommandExecutor {
     public static SectorServer plugin;
     public static PluginChannelListener pcl;
@@ -27,6 +28,10 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     public static Location shiftLocation(Location loc) {
         return loc.add(shiftX, 0, shiftZ);
     }
+
+    public static String serverName;
+    private static List<String> servers;
+    public static int width; // szerokość pojedyńczego serwera
 
     private static SectorServer getPlugin() {
         return plugin;
@@ -69,43 +74,34 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
             SectorServer.getPlugin().getLogger().severe("Nieporawny config.yml SectorServer, \"name\" nie znajduje sie w \"servers\"");
         }
 
-
         int n = i;
+        int count = serversPerSide();
+
+        System.out.println(serverName + " " + n);
+        System.out.println(n % (double) count + " " + n / count);
+
         Bukkit.getWorlds().forEach(world -> {
             WorldBorder border = world.getWorldBorder();
 
-            int count = serversCount();
 
-            Function<Integer, Double> coord = x -> x * width + width / 2.0 + 1;
+            Function<Integer, Double> coord = x -> x * width + width / 2.0;
 
             border.setCenter(new Location(world, coord.apply(n % count), 0, coord.apply(n / count)));
-            border.setSize(width);
+            border.setSize(width + 1);
             border.setWarningDistance(0);
             border.setDamageBuffer(5);
         });
     }
 
-    public static String serverName;
-    public static int width; // szerokość pojedyńczego serwera
-    private static List<String> servers;
+
     public static String getServer(int s) {
         return servers.get(s);
     }
     public static int serversCount() {
         return servers.size();
     }
-
-    public static void connectAnotherServer(String server, Player player) {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        DataOutputStream out = new DataOutputStream(byteArrayOutputStream);
-
-        try {
-            out.writeUTF("Connect");
-            out.writeUTF(server);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        player.sendPluginMessage(SectorServer.getPlugin(SectorServer.class), "BungeeCord", byteArrayOutputStream.toByteArray());
+    public static int serversPerSide() {
+        return (int) Math.sqrt(serversCount());
     }
 
     public static void forwardCoordinates(String subchannel, String target, Player player) {
@@ -131,13 +127,25 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
             out.writeShort(data.length);
             out.write(data);
 
+
             player.sendPluginMessage(SectorServer.getPlugin(SectorServer.class), "BungeeCord", b.toByteArray());
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
+    public static void connectAnotherServer(String server, Player player) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        DataOutputStream out = new DataOutputStream(byteArrayOutputStream);
 
+        try {
+            out.writeUTF("Connect");
+            out.writeUTF(server);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        player.sendPluginMessage(SectorServer.getPlugin(SectorServer.class), "BungeeCord", byteArrayOutputStream.toByteArray());
+    }
 }
 
 

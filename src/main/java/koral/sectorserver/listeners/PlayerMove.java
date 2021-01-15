@@ -4,6 +4,7 @@ import koral.sectorserver.SectorServer;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 public class PlayerMove implements Listener {
@@ -12,18 +13,26 @@ public class PlayerMove implements Listener {
         int s1 = locToServer(e.getFrom());
         int s2 = locToServer(e.getTo());
 
-        e.getPlayer().sendMessage(s1 + " " + s2);
-        if (canPass(s1, s2)) {
-            SectorServer.forwardCoordinates("customchannel", SectorServer.getServer(s2), e.getPlayer());
+        String s2Name;
+        if (canPass(s1, s2) && !SectorServer.serverName.equals(s2Name = SectorServer.getServer(s2))) {
+            SectorServer.forwardCoordinates("customchannel", s2Name, e.getPlayer());
             SectorServer.connectAnotherServer(SectorServer.getServer(s2), e.getPlayer());
         }
     }
 
+    @EventHandler
+    public void __(BlockBreakEvent ev) {
+        SectorServer.forwardCoordinates("customchannel", "s2", ev.getPlayer());
+    }
+
+
 
     boolean canPass(int s1, int s2) {
-        if (Math.min(s1, s2) < 0 || Math.max(s1, s2) >= SectorServer.serversCount() || s1 == s2)
+        int n = SectorServer.serversPerSide();
+
+        if (Math.min(s1, s2) < 0 || Math.max(s1, s2) >=  SectorServer.serversCount() || s1 == s2)
             return false;
-        int n = SectorServer.serversCount();
+
         return  s1 % n == s2 % n ||
                 s1 / n == s2 / n;
     }
@@ -38,10 +47,10 @@ public class PlayerMove implements Listener {
      */
     int locToServer(Location loc) {
         loc = SectorServer.shiftLocation(loc);
-        if (loc.getX() > SectorServer.width * SectorServer.serversCount() || loc.getX() < 0)
+        if (loc.getX() > SectorServer.width * SectorServer.serversPerSide() || loc.getX() < 0)
             return -1;
 
-        int result = (loc.getBlockX() / SectorServer.width) + (loc.getBlockZ() / SectorServer.width * SectorServer.serversCount());
+        int result = (loc.getBlockX() / SectorServer.width) + (loc.getBlockZ() / SectorServer.width * SectorServer.serversPerSide());
 
         return (result < 0 || result >= SectorServer.serversCount()) ? -1 : result;
         }
