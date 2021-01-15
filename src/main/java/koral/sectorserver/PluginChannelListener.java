@@ -1,14 +1,16 @@
 package koral.sectorserver;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.util.HashMap;
+import java.util.function.Function;
 
 
 public class PluginChannelListener implements PluginMessageListener {
@@ -31,9 +33,12 @@ public class PluginChannelListener implements PluginMessageListener {
                 JSONParser parser = new JSONParser();
                 JSONObject jsonObject = (JSONObject) parser.parse(s);
 
+                Function<String, Double> coord = str -> (double) jsonObject.get(str);
+
                 String playername = (String) jsonObject.get("player");
                 Location location = new Location(Bukkit.getWorld((String) jsonObject.get("world")),
-                        (double)  jsonObject.get("x"),(double) jsonObject.get("y"),(double) jsonObject.get("z"));
+                        coord.apply("x"), coord.apply("y"), coord.apply("z"),
+                        (float) (double) jsonObject.get("yaw"), (float) (double) jsonObject.get("pitch"));
                 lokacjaGracza.put(playername, location);
             }
         }catch(Exception ex){

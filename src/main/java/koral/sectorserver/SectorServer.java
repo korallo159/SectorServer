@@ -1,32 +1,32 @@
 package koral.sectorserver;
-import com.github.yannicklamprecht.worldborder.api.*;
-import com.google.common.collect.Iterables;
+
+import com.google.gson.Gson;
 import koral.sectorserver.listeners.PlayerJoin;
-import net.md_5.bungee.api.ChatColor;
+import koral.sectorserver.listeners.PlayerMove;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.WorldBorder;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.Vector;
 import org.json.simple.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.function.Function;
 
 public final class SectorServer extends JavaPlugin implements Listener, CommandExecutor {
     public static SectorServer plugin;
     public static PluginChannelListener pcl;
+
+    public static double shiftX;
+    public static double shiftZ;
+    public static Location shiftLocation(Location loc) {
+        return loc.add(shiftX, 0, shiftZ);
+    }
 
     private static SectorServer getPlugin() {
         return plugin;
@@ -36,17 +36,63 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     public void onEnable() {
         // Plugin startup logic
         plugin = this;
+
+        saveDefaultConfig();
+
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", pcl = new PluginChannelListener());
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
+        getServer().getPluginManager().registerEvents(new PlayerMove(), this);
         getCommand("get").setExecutor(this);
 
-
+        reloadPlugin();
     }
-
     @Override
     public void onDisable() {
+    }
+
+    public void reloadPlugin() {
+        reloadConfig();
+        shiftX = getConfig().getDouble("Shifts.X", 0);
+        shiftZ = getConfig().getDouble("Shifts.Z", 0);
+        servers = getConfig().getStringList("servers");
+        width = getConfig().getInt("Border Size");
+        serverName = getConfig().getString("name");
+
+        int i = -1;
+        try {
+            while (true)
+                if (servers.get(++i).equals(serverName))
+                    break;
+        } catch (IndexOutOfBoundsException error) {
+            SectorServer.getPlugin().getLogger().severe("Nieporawny config.yml SectorServer, \"name\" nie znajduje sie w \"servers\"");
+        }
+
+
+        int n = i;
+        Bukkit.getWorlds().forEach(world -> {
+            WorldBorder border = world.getWorldBorder();
+
+            int count = serversCount();
+
+            Function<Integer, Double> coord = x -> x * width + width / 2.0 + 1;
+
+            border.setCenter(new Location(world, coord.apply(n % count), 0, coord.apply(n / count)));
+            border.setSize(width);
+            border.setWarningDistance(0);
+            border.setDamageBuffer(5);
+        });
+    }
+
+    public static String serverName;
+    public static int width; // szerokość pojedyńczego serwera
+    private static List<String> servers;
+    public static String getServer(int s) {
+        return servers.get(s);
+    }
+    public static int serversCount() {
+        return servers.size();
     }
 
     public static void connectAnotherServer(String server, Player player) {
@@ -60,7 +106,6 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
             e.printStackTrace();
         }
         player.sendPluginMessage(SectorServer.getPlugin(SectorServer.class), "BungeeCord", byteArrayOutputStream.toByteArray());
-        player.sendMessage("laczenie z sektorem...");
     }
 
     public static void forwardCoordinates(String subchannel, String target, Player player) {
@@ -75,12 +120,13 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("player", player.getName());
             jsonObject.put("world", player.getLocation().getWorld().getName());
+            jsonObject.put("pitch", player.getLocation().getPitch());
+            jsonObject.put("yaw", player.getLocation().getYaw());
             jsonObject.put("x", player.getLocation().getX());
             jsonObject.put("y", player.getLocation().getY());
             jsonObject.put("z", player.getLocation().getZ());
 
             String s = jsonObject.toJSONString();
-            System.out.println(s);
             byte[] data = s.getBytes();
             out.writeShort(data.length);
             out.write(data);
