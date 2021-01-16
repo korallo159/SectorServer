@@ -16,10 +16,14 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
-//TODO:żeby nie można było niszczyć kilkanaście kratek od sektora.
-//TODO:Bossbar, powiadomienie, że zbliżasz się do sektora.
+//TODO:żeby nie można było niszczyć kilkanaście kratek od sektora/ nie mozna bylo uzywac perel i bugowac generalnie
+//TODO:Bossbar, powiadomienie, że zbliżasz się do sektora/ powiadomienie, ze zblizasz sie do granicy gdzie nie ma sektora.
 //TODO:SYNCHRONIZACJA POGODY // OPCJONALNE
 //TODO: ZAPISYWANIE PRZEDMIOTÓW MIĘDZY SERWERAMI - WRZUCENIE PRZEDMIOTÓW DO SQLA I ODBIERANIE JE.
+//TODO: GILDIE - jest gotowy plugin na gildie open source funny guilds, dziala na sql wszystko.
+//TODO: rzeczy zwiazane ze spawnem - po smierci trafia albo do bazy, albo na spawna z innego serwera.
+//TODO: balancer przekierować ruch 50%/50% miedzy dwoma spawnami
+//TODO: zabezpieczenie z sektorami okreslona ilosc graczy na sektor, info jezeli jest full
 
 public final class SectorServer extends JavaPlugin implements Listener, CommandExecutor {
     public static SectorServer plugin;
@@ -90,7 +94,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
             Function<Integer, Double> coord = x -> x * width + width / 2.0;
 
             border.setCenter(new Location(world, coord.apply(n % count), 0, coord.apply(n / count)));
-            border.setSize(width + 1);
+            border.setSize(width + 2);
             border.setWarningDistance(0);
             border.setDamageBuffer(5);
         });
