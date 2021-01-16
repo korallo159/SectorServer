@@ -43,7 +43,6 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     public void onEnable() {
         // Plugin startup logic
         plugin = this;
-
         saveDefaultConfig();
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
@@ -53,20 +52,21 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getServer().getPluginManager().registerEvents(new PlayerMove(), this);
         getCommand("get").setExecutor(this);
 
-        reloadPlugin();
+        SocketClient.connectToSocketServer();
+
+    //    reloadPlugin();
     }
     @Override
     public void onDisable() {
     }
 //TODO przerobić tak, aby pobierało dane z jsona z SocketClient, a nie z configu.
-    public void reloadPlugin() {
-        SocketClient.connectToSocketServer();
-        reloadConfig();
-        shiftX = getConfig().getDouble("Shifts.X", 0);
-        shiftZ = getConfig().getDouble("Shifts.Z", 0);
-        servers = getConfig().getStringList("servers");
-        width = getConfig().getInt("Border Size");
-        serverName = getConfig().getString("name"); //musi zostać, musi być w configu
+    public static void reloadPlugin() {
+        getPlugin().reloadConfig();
+        shiftX = SocketClient.shiftx;
+        shiftZ = SocketClient.shiftz;
+        servers = SocketClient.servery;
+        width = SocketClient.width;
+        serverName = getPlugin().getConfig().getString("name"); //musi zostać, musi być w configu
 
         int i = -1;
         try {

@@ -39,7 +39,8 @@ public class SocketClient {
                 shiftx = (double) jsonObject.get("shiftx");
                 shiftz = (double) jsonObject.get("shiftz");
                 width = (int) (long) jsonObject.get("width");
-
+                System.out.println(servery);
+                SectorServer.reloadPlugin();
             } catch (IOException | ParseException e) {
                 e.printStackTrace();
             }

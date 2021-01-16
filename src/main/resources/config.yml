@@ -1,18 +1,4 @@
 ipsocket: localhost
 socketport: 5500
 # Nazwa Serwera
-name: example server 1
-
-# lista serwerów
-servers:
-  - example server 1
-  - example server 2
-  - example server 3
-
-# Wielkość bordera
-Border Size: 100
-
-# Przesunięcie phnktu 0
-Shifts:
-  x: 0.0
-  y: 0.0
+name: s1
