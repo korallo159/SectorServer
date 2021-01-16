@@ -35,7 +35,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     private static List<String> servers;
     public static int width; // szerokość pojedyńczego serwera
 
-    private static SectorServer getPlugin() {
+    public static SectorServer getPlugin() {
         return plugin;
     }
 

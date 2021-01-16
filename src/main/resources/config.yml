@@ -1,4 +1,5 @@
-
+ipsocket: localhost
+socketport: 5500
 # Nazwa Serwera
 name: example server 1
 
