@@ -25,7 +25,7 @@ public class PlayerMove implements Listener {
         SectorServer.forwardCoordinates("customchannel", "s2", ev.getPlayer());
     }
 
-
+//TODO zrobic lepsze dotykanie tej bariery
 
     boolean canPass(int s1, int s2) {
         int n = SectorServer.serversPerSide();

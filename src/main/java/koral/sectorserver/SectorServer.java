@@ -16,8 +16,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
-
-// TODO Bungeee ma wysyłać zmienne do serwerów w trakcie przeładowywania pluginu
+//TODO:żeby nie można było niszczyć kilkanaście kratek od sektora.
+//TODO:Bossbar, powiadomienie, że zbliżasz się do sektora.
+//TODO:SYNCHRONIZACJA POGODY // OPCJONALNE
+//TODO: ZAPISYWANIE PRZEDMIOTÓW MIĘDZY SERWERAMI - WRZUCENIE PRZEDMIOTÓW DO SQLA I ODBIERANIE JE.
 
 public final class SectorServer extends JavaPlugin implements Listener, CommandExecutor {
     public static SectorServer plugin;
@@ -56,14 +58,15 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     @Override
     public void onDisable() {
     }
-
+//TODO przerobić tak, aby pobierało dane z jsona z SocketClient, a nie z configu.
     public void reloadPlugin() {
+        SocketClient.connectToSocketServer();
         reloadConfig();
         shiftX = getConfig().getDouble("Shifts.X", 0);
         shiftZ = getConfig().getDouble("Shifts.Z", 0);
         servers = getConfig().getStringList("servers");
         width = getConfig().getInt("Border Size");
-        serverName = getConfig().getString("name");
+        serverName = getConfig().getString("name"); //musi zostać, musi być w configu
 
         int i = -1;
         try {

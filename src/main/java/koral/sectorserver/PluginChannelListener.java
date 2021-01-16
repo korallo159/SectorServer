@@ -17,11 +17,9 @@ public class PluginChannelListener implements PluginMessageListener {
     public static HashMap<String, Location> lokacjaGracza = new HashMap<>();
     @Override
     public void onPluginMessageReceived(String channel, Player player, byte[] message) {
-        System.out.println("Jest i on");
         if (!channel.equals("BungeeCord")) {
             return;
         }
-
         try{
             DataInputStream in = new DataInputStream(new ByteArrayInputStream(message));
             String subchannel = in.readUTF();
@@ -29,7 +27,6 @@ public class PluginChannelListener implements PluginMessageListener {
                 short length = in.readShort();
                 byte[] data = new byte[length];
                 in.readFully(data);
-                System.out.println("Pan pakiet");
                 String s = new String(data);
                 JSONParser parser = new JSONParser();
                 JSONObject jsonObject = (JSONObject) parser.parse(s);
@@ -47,9 +44,14 @@ public class PluginChannelListener implements PluginMessageListener {
                 else
                     lokacjaGracza.put(playername, location);
             }
+
+            if(subchannel.equals("configChannel")){
+                System.out.println(in.readUTF());
+            }
         }catch(Exception ex){
             ex.printStackTrace();
         }
+
     }
 
 
