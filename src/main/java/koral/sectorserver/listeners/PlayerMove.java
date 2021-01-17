@@ -4,7 +4,6 @@ import koral.sectorserver.SectorServer;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 public class PlayerMove implements Listener {
@@ -18,11 +17,6 @@ public class PlayerMove implements Listener {
             SectorServer.forwardCoordinates("customchannel", s2Name, e.getPlayer());
             SectorServer.connectAnotherServer(SectorServer.getServer(s2), e.getPlayer());
         }
-    }
-
-    @EventHandler
-    public void __(BlockBreakEvent ev) {
-        SectorServer.forwardCoordinates("customchannel", "s2", ev.getPlayer());
     }
 
 //TODO zrobic lepsze dotykanie tej bariery

@@ -1,5 +1,7 @@
 package koral.sectorserver;
 
+import koral.sectorserver.listeners.BlockBreak;
+import koral.sectorserver.listeners.BlockPlace;
 import koral.sectorserver.listeners.PlayerJoin;
 import koral.sectorserver.listeners.PlayerMove;
 import org.bukkit.Bukkit;
@@ -24,6 +26,7 @@ import java.util.function.Function;
 //TODO: rzeczy zwiazane ze spawnem - po smierci trafia albo do bazy, albo na spawna z innego serwera.
 //TODO: balancer przekierować ruch 50%/50% miedzy dwoma spawnami
 //TODO: zabezpieczenie z sektorami okreslona ilosc graczy na sektor, info jezeli jest full
+//TODO: Bypass na budowanie przy borderze
 
 public final class SectorServer extends JavaPlugin implements Listener, CommandExecutor {
     public static SectorServer plugin;
@@ -38,6 +41,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     public static String serverName;
     private static List<String> servers;
     public static int width; // szerokość pojedyńczego serwera
+    public static int protectedBlocks;
 
     public static SectorServer getPlugin() {
         return plugin;
@@ -54,22 +58,28 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
         getServer().getPluginManager().registerEvents(new PlayerMove(), this);
+        getServer().getPluginManager().registerEvents(new BlockPlace(), this);
+        getServer().getPluginManager().registerEvents(new BlockBreak(), this);
         getCommand("get").setExecutor(this);
 
-        SocketClient.connectToSocketServer();
-
-    //    reloadPlugin();
+        reloadPlugin();
     }
     @Override
     public void onDisable() {
     }
 //TODO przerobić tak, aby pobierało dane z jsona z SocketClient, a nie z configu.
+
     public static void reloadPlugin() {
+        SocketClient.connectToSocketServer();
+    }
+    static void reloadPlugin(List<String> servers, int width, double shiftX, double shiftZ, int protectedBlocks) {
         getPlugin().reloadConfig();
-        shiftX = SocketClient.shiftx;
-        shiftZ = SocketClient.shiftz;
-        servers = SocketClient.servery;
-        width = SocketClient.width;
+
+        SectorServer.width = width;
+        SectorServer.shiftX = shiftX;
+        SectorServer.shiftZ = shiftZ;
+        SectorServer.servers = servers;
+        SectorServer.protectedBlocks = protectedBlocks;
         serverName = getPlugin().getConfig().getString("name"); //musi zostać, musi być w configu
 
         int i = -1;
@@ -90,7 +100,6 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         Bukkit.getWorlds().forEach(world -> {
             WorldBorder border = world.getWorldBorder();
 
-
             Function<Integer, Double> coord = x -> x * width + width / 2.0;
 
             border.setCenter(new Location(world, coord.apply(n % count), 0, coord.apply(n / count)));
@@ -98,6 +107,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
             border.setWarningDistance(0);
             border.setDamageBuffer(5);
         });
+
     }
 
 
@@ -110,6 +120,13 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     public static int serversPerSide() {
         return (int) Math.sqrt(serversCount());
     }
+
+
+    public static void sendPluginMessage(Player player, byte[] data) {
+        player.sendPluginMessage(SectorServer.getPlugin(SectorServer.class), "BungeeCord", data);
+    }
+
+
 
     public static void forwardCoordinates(String subchannel, String target, Player player) {
         try {
@@ -134,8 +151,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
             out.writeShort(data.length);
             out.write(data);
 
-
-            player.sendPluginMessage(SectorServer.getPlugin(SectorServer.class), "BungeeCord", b.toByteArray());
+            sendPluginMessage(player, b.toByteArray());
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -151,7 +167,8 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         } catch (IOException e) {
             e.printStackTrace();
         }
-        player.sendPluginMessage(SectorServer.getPlugin(SectorServer.class), "BungeeCord", byteArrayOutputStream.toByteArray());
+
+        sendPluginMessage(player, byteArrayOutputStream.toByteArray());
     }
 }
 
