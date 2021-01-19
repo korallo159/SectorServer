@@ -3,3 +3,8 @@ socketport: 5500
 # Nazwa Serwera
 name: s1
 weatherForwader: true # <- Kazdy inny serwer bedzie nasluchiwal pogode z tego serwera,
+
+#inventory
+jdbcurl: jdbc:mysql://tsgorzyce.pl:3306/guildsinv
+username: guilduser
+password: 1478963
