@@ -3,4 +3,3 @@ version: ${project.version}
 main: koral.sectorserver.SectorServer
 api-version: 1.16
 commands:
-  get:

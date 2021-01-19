@@ -8,7 +8,7 @@ public class DatabaseConnection {
 
     public static HikariDataSource hikari;
 
-    public static void connectToDatabase() {
+    public static void configureDbConnection() {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(SectorServer.getPlugin().getConfig().getString("jdbcurl"));
         hikariConfig.setMaxLifetime(900000); // zeby uniknac wiekszy lifetime hikari niz mysql

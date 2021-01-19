@@ -1,6 +1,5 @@
 package koral.sectorserver;
 
-import com.google.common.collect.Iterables;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.json.simple.JSONObject;

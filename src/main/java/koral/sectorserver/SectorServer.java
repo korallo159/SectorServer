@@ -1,10 +1,9 @@
 package koral.sectorserver;
 
 import com.google.common.collect.Iterables;
-import koral.sectorserver.listeners.BlockBreak;
-import koral.sectorserver.listeners.BlockPlace;
-import koral.sectorserver.listeners.PlayerJoin;
-import koral.sectorserver.listeners.PlayerMove;
+import koral.sectorserver.database.DatabaseConnection;
+import koral.sectorserver.database.statements.Table;
+import koral.sectorserver.listeners.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.WorldBorder;
@@ -28,6 +27,8 @@ import java.util.function.Function;
 //TODO: balancer przekierować ruch 50%/50% miedzy dwoma spawnami
 //TODO: zabezpieczenie z sektorami okreslona ilosc graczy na sektor, info jezeli jest full
 //TODO: Bypass na budowanie przy borderze
+
+//TODO: trzeba zablokowac standardowe zapisywanie inventory.
 
 public final class SectorServer extends JavaPlugin implements Listener, CommandExecutor {
     public static SectorServer plugin;
@@ -57,16 +58,18 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", pcl = new PluginChannelListener());
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
+        getServer().getPluginManager().registerEvents(new PlayerQuit(), this);
         getServer().getPluginManager().registerEvents(new PlayerMove(), this);
         getServer().getPluginManager().registerEvents(new BlockPlace(), this);
         getServer().getPluginManager().registerEvents(new BlockBreak(), this);
-        getCommand("get").setExecutor(this);
+
         reloadPlugin();
+        DatabaseConnection.configureDbConnection();
+        Table.createTable();
     }
     @Override
     public void onDisable() {
     }
-//TODO przerobić tak, aby pobierało dane z jsona z SocketClient, a nie z configu.
 
     public static void reloadPlugin() {
         SocketClient.connectToSocketServer();
