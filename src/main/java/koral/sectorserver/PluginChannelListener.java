@@ -28,11 +28,11 @@ public class PluginChannelListener implements PluginMessageListener {
             DataInputStream in = new DataInputStream(new ByteArrayInputStream(message));
             subchannel = in.readUTF();
 
-            Method method = PluginChannelListener.class.getMethod(subchannel, DataInputStream.class);
+            Method method = PluginChannelListener.class.getDeclaredMethod(subchannel, DataInputStream.class);
             if (method == null)
                 System.out.println("Brak metody obsługującej subchannel " + subchannel);
             else
-                method.invoke(in);
+                method.invoke(this, in);
 
         } catch(Throwable ex) {
             System.out.println("Problem z odbieraniem subchannelu " + subchannel);
@@ -68,6 +68,25 @@ public class PluginChannelListener implements PluginMessageListener {
             p.teleport(location);
         else
             lokacjaGracza.put(playername, location);
+    }
+
+    void weatherchannel(DataInputStream in) throws IOException, ParseException {
+        short length = in.readShort();
+        byte[] data = new byte[length];
+        in.readFully(data);
+        String s = new String(data);
+        JSONParser parser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) parser.parse(s);
+
+        int time = (int) (long) jsonObject.get("time");
+        boolean storm = (boolean) jsonObject.get("hasStorm");
+        boolean thundering = (boolean) jsonObject.get("isThundering");
+
+        Bukkit.getWorlds().get(0).setTime(time);
+        Bukkit.getWorlds().get(0).setStorm(storm);
+        Bukkit.getWorlds().get(0).setThundering(thundering);
+
+
     }
 
 

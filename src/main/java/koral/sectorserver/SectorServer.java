@@ -1,5 +1,6 @@
 package koral.sectorserver;
 
+import com.google.common.collect.Iterables;
 import koral.sectorserver.listeners.BlockBreak;
 import koral.sectorserver.listeners.BlockPlace;
 import koral.sectorserver.listeners.PlayerJoin;
@@ -46,7 +47,6 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     public static SectorServer getPlugin() {
         return plugin;
     }
-
     @Override
     public void onEnable() {
         // Plugin startup logic
@@ -61,7 +61,6 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getServer().getPluginManager().registerEvents(new BlockPlace(), this);
         getServer().getPluginManager().registerEvents(new BlockBreak(), this);
         getCommand("get").setExecutor(this);
-
         reloadPlugin();
     }
     @Override
@@ -81,6 +80,9 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         SectorServer.servers = servers;
         SectorServer.protectedBlocks = protectedBlocks;
         serverName = getPlugin().getConfig().getString("name"); //musi zostać, musi być w configu
+        boolean isWeatherForwader = getPlugin().getConfig().getBoolean("weatherForwarder");
+        if(isWeatherForwader)
+            WeatherSync.runWeatherSync();
 
         int i = -1;
         try {
@@ -156,6 +158,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
             ex.printStackTrace();
         }
     }
+
 
     public static void connectAnotherServer(String server, Player player) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
