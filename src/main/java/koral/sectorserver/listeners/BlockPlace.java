@@ -20,9 +20,10 @@ public class BlockPlace implements Listener {
         double distance = Math.max(calcDistance.apply(Location::getX), calcDistance.apply(Location::getZ));
 
         if (distance > SectorServer.width / 2d - SectorServer.protectedBlocks) {
-            ev.getPlayer().sendMessage("§4Jesteś zbyt blisko granicy, aby móc stawiać bloki.");
-            if(!ev.getPlayer().hasPermission(SectorServer.getPlugin().getName() + ".admin"))
-            ev.setCancelled(true);
+            if(!ev.getPlayer().hasPermission(SectorServer.getPlugin().getName() + ".admin")) {
+                ev.getPlayer().sendMessage("§4Jesteś zbyt blisko granicy, aby móc stawiać bloki.");
+                ev.setCancelled(true);
+            }
         }
     }
 }

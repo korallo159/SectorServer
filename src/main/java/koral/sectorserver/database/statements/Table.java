@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import static koral.sectorserver.database.DatabaseConnection.hikari;
-
 public class Table {
 
     public static void createTable() {

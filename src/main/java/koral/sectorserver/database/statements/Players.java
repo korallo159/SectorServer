@@ -48,6 +48,7 @@ public class Players {
         }
     }
 
+    //TODO: Aktualizowanie EQ przy wyjsciu gracza z serwera// jak bedzie gotowe, to zrobic jeszcze zeby zapisywalo co 5 min eq kazdego.
     public static void updatePlayerData(Player player){
         Connection connection = null;
         PreparedStatement statement = null;
@@ -57,7 +58,7 @@ public class Players {
             statement.setString(1, player.getName());
             String update = "UPDATE Players SET playerdata=? WHERE NICK=?";
             statement = connection.prepareStatement(update);
-            statement.setString(1, "updatetest"); //TODO: wrzucic tutaj jsona z danymi gracza
+            statement.setString(1, "Testowy string - tutaj ma byc cale data entity"); //TODO: wrzucic tutaj jsona  data entity z danymi gracza
             statement.setString(2, player.getName());
             statement.execute();
 
@@ -82,6 +83,7 @@ public class Players {
         }
     }
 
+    //TODO: Odbieranie eq z bazy z ktorej dostalismy
     public static void getMysqlPlayerData(Player player){
       Connection connection = null;
       PreparedStatement statement = null;
@@ -93,7 +95,7 @@ public class Players {
           ResultSet resultSet = statement.executeQuery();
           while(resultSet.next()){
               String data = resultSet.getString("playerdata");
-              System.out.println(data);
+              System.out.println(data); // data <- string z jsonem data entity
           }
       }catch (SQLException e){
 
