@@ -28,14 +28,12 @@ public class WeatherSync {
             for(int i =0; i<players.size(); i++){
                 int randomPlayer = new Random().nextInt(players.size());
                 Player player = players.get(randomPlayer);
-                System.out.println(Bukkit.getServer().getWorlds().get(0));
                 if(Bukkit.getServer().getWorlds().get(0).equals(player.getWorld())){ //world 0 to prawie zawsze swiat standardowy, a tylko tam sie liczy dla nas pogoda
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("time", player.getWorld().getTime());
                     jsonObject.put("hasStorm", player.getLocation().getWorld().hasStorm());
                     jsonObject.put("isThundering", player.getLocation().getWorld().isThundering());
                     String s = jsonObject.toJSONString();
-                    System.out.println(s);
                     byte[] data = s.getBytes();
                     out.writeShort(data.length);
                     out.write(data);

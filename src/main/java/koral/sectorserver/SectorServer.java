@@ -1,8 +1,4 @@
 package koral.sectorserver;
-
-import com.google.common.collect.Iterables;
-import koral.sectorserver.database.DatabaseConnection;
-import koral.sectorserver.database.statements.Table;
 import koral.sectorserver.listeners.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -18,17 +14,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
-//TODO:żeby nie można było niszczyć kilkanaście kratek od sektora/ nie mozna bylo uzywac perel i bugowac generalnie
-//TODO:Bossbar, powiadomienie, że zbliżasz się do sektora/ powiadomienie, ze zblizasz sie do granicy gdzie nie ma sektora.
-//TODO:SYNCHRONIZACJA POGODY // OPCJONALNE
+//TODO: Bossbar, powiadomienie, że zbliżasz się do sektora, jak blisko niego jestes.
 //TODO: ZAPISYWANIE PRZEDMIOTÓW MIĘDZY SERWERAMI - WRZUCENIE PRZEDMIOTÓW DO SQLA I ODBIERANIE JE.
-//TODO: GILDIE - jest gotowy plugin na gildie open source funny guilds, dziala na sql wszystko.
 //TODO: rzeczy zwiazane ze spawnem - po smierci trafia albo do bazy, albo na spawna z innego serwera.
-//TODO: balancer przekierować ruch 50%/50% miedzy dwoma spawnami
-//TODO: zabezpieczenie z sektorami okreslona ilosc graczy na sektor, info jezeli jest full
-//TODO: Bypass na budowanie przy borderze
+//TODO: komenda /spawn przenosi na mniej obciazony /spawn
+//TODO: wspolny czat
+//TODO: gildyjny home musi teleportowac na dobry sektor z dobrą gildią. tak samo /sethome /home. moj pomysl: teleportacja najpierw nasluchuje na kordy, przelicza je w ktorym to sektorze i wysyla info na ten serwer. Przenosi gracza a potem dzieje sie wszystko jak normalnie. czyli wykonuje sie
 
-//TODO: trzeba zablokowac standardowe zapisywanie inventory.
 
 public final class SectorServer extends JavaPlugin implements Listener, CommandExecutor {
     public static SectorServer plugin;
@@ -45,9 +37,9 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     public static int width; // szerokość pojedyńczego serwera
     public static int protectedBlocks;
 
-    public static SectorServer getPlugin() {
-        return plugin;
-    }
+        public static SectorServer getPlugin() {
+            return plugin;
+        }
     @Override
     public void onEnable() {
         // Plugin startup logic
@@ -58,14 +50,12 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", pcl = new PluginChannelListener());
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
-        getServer().getPluginManager().registerEvents(new PlayerQuit(), this);
         getServer().getPluginManager().registerEvents(new PlayerMove(), this);
         getServer().getPluginManager().registerEvents(new BlockPlace(), this);
         getServer().getPluginManager().registerEvents(new BlockBreak(), this);
 
+
         reloadPlugin();
-        DatabaseConnection.configureDbConnection();
-        Table.createTable();
     }
     @Override
     public void onDisable() {

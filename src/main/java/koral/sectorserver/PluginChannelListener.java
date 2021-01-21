@@ -81,10 +81,15 @@ public class PluginChannelListener implements PluginMessageListener {
         int time = (int) (long) jsonObject.get("time");
         boolean storm = (boolean) jsonObject.get("hasStorm");
         boolean thundering = (boolean) jsonObject.get("isThundering");
-        Bukkit.getWorlds().get(0).setTime(time);
-        Bukkit.getWorlds().get(0).setStorm(storm);
-        Bukkit.getWorlds().get(0).setThundering(thundering);
 
+        if(Bukkit.getWorlds().get(0).getTime() != time)
+            Bukkit.getWorlds().get(0).setTime(time);
+
+        if(Bukkit.getWorlds().get(0).hasStorm() != storm)
+            Bukkit.getWorlds().get(0).setStorm(storm);
+
+        if(Bukkit.getWorlds().get(0).isThundering() != thundering)
+            Bukkit.getWorlds().get(0).setThundering(thundering);
 
     }
 
