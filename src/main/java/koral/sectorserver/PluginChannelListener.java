@@ -1,5 +1,6 @@
 package koral.sectorserver;
 
+import koral.sectorserver.listeners.PlayerDeath;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -93,6 +94,13 @@ public class PluginChannelListener implements PluginMessageListener {
 
     }
 
+    void PlayerCount(DataInputStream in) throws IOException{
+        String server = in.readUTF();
+        int playerCount = in.readInt();
+
+        PlayerDeath.spawnMap.put(server, playerCount);
+
+    }
 
 /*    @Override
     public synchronized void onPluginMessageReceived(String channel, Player player, byte[] message) {

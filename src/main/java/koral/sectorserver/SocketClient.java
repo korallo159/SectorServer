@@ -39,13 +39,20 @@ public class SocketClient {
                 for(int i = 0; i<jsonArray.size(); i++) {
                     servery.add(jsonArray.get(i).toString());
                 }
+                String strings2 = (String) jsonObject.get("spawns");
+                JSONArray jsonArray1 = (JSONArray) parser.parse(strings2);
+
+                final List<String> spawns = new ArrayList<>();
+                for(int i = 0; i<jsonArray1.size(); i++){
+                    spawns.add(jsonArray1.get(i).toString());
+                }
 
                 final double shiftx = (double) jsonObject.get("shiftx");
                 final double shiftz = (double) jsonObject.get("shiftz");
                 final int width = (int) (long) jsonObject.get("width");
                 final int protectedBlocks = (int) (long) jsonObject.get("protectedBlocks");
 
-                SectorServer.reloadPlugin(servery, width, shiftx, shiftz, protectedBlocks);
+                SectorServer.reloadPlugin(servery, spawns, width, shiftx, shiftz, protectedBlocks);
             } catch (ConnectException e2) {
                 System.out.println("Brak łączności z SocketServerem");
                 Bukkit.getScheduler().runTaskLater(SectorServer.plugin, SocketClient::connectToSocketServer, 200);

@@ -15,10 +15,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
 //TODO: Bossbar, powiadomienie, że zbliżasz się do sektora, jak blisko niego jestes.
-//TODO: ZAPISYWANIE PRZEDMIOTÓW MIĘDZY SERWERAMI - WRZUCENIE PRZEDMIOTÓW DO SQLA I ODBIERANIE JE.
-//TODO: rzeczy zwiazane ze spawnem - po smierci trafia albo do bazy, albo na spawna z innego serwera.
+//TODO: rzeczy zwiazane ze spawnem - po smierci trafia albo do bazy, albo na stpawna z innego serwera.
 //TODO: komenda /spawn przenosi na mniej obciazony /spawn
-//TODO: wspolny czat
+
 //TODO: gildyjny home musi teleportowac na dobry sektor z dobrą gildią. tak samo /sethome /home. moj pomysl: teleportacja najpierw nasluchuje na kordy, przelicza je w ktorym to sektorze i wysyla info na ten serwer. Przenosi gracza a potem dzieje sie wszystko jak normalnie. czyli wykonuje sie
 
 
@@ -34,6 +33,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
 
     public static String serverName;
     private static List<String> servers;
+    public static List<String> spawns;
     public static int width; // szerokość pojedyńczego serwera
     public static int protectedBlocks;
 
@@ -51,9 +51,9 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
         getServer().getPluginManager().registerEvents(new PlayerMove(), this);
+        getServer().getPluginManager().registerEvents(new PlayerDeath(), this);
         getServer().getPluginManager().registerEvents(new BlockPlace(), this);
         getServer().getPluginManager().registerEvents(new BlockBreak(), this);
-
 
         reloadPlugin();
     }
@@ -64,13 +64,15 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     public static void reloadPlugin() {
         SocketClient.connectToSocketServer();
     }
-    static void reloadPlugin(List<String> servers, int width, double shiftX, double shiftZ, int protectedBlocks) {
+    static void reloadPlugin(List<String> servers, List<String> spawns, int width, double shiftX, double shiftZ, int protectedBlocks) {
         getPlugin().reloadConfig();
 
         SectorServer.width = width;
         SectorServer.shiftX = shiftX;
         SectorServer.shiftZ = shiftZ;
         SectorServer.servers = servers;
+        SectorServer.spawns = spawns;
+        SectorServer.spawns.forEach(spawn -> PlayerDeath.spawnMap.put(spawn, 0));
         SectorServer.protectedBlocks = protectedBlocks;
         serverName = getPlugin().getConfig().getString("name"); //musi zostać, musi być w configu
         boolean isWeatherForwader = getPlugin().getConfig().getBoolean("weatherForwarder");
@@ -163,7 +165,6 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         sendPluginMessage(player, byteArrayOutputStream.toByteArray());
     }
 }
