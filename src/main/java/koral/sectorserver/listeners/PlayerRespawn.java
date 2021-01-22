@@ -14,7 +14,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PlayerDeath implements Listener {
+public class PlayerRespawn implements Listener {
 
     public static Map<String, Integer> spawnMap = new HashMap<>();
     @EventHandler

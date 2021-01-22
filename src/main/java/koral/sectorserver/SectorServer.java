@@ -51,7 +51,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
         getServer().getPluginManager().registerEvents(new PlayerMove(), this);
-        getServer().getPluginManager().registerEvents(new PlayerDeath(), this);
+        getServer().getPluginManager().registerEvents(new PlayerRespawn(), this);
         getServer().getPluginManager().registerEvents(new BlockPlace(), this);
         getServer().getPluginManager().registerEvents(new BlockBreak(), this);
 
@@ -72,7 +72,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         SectorServer.shiftZ = shiftZ;
         SectorServer.servers = servers;
         SectorServer.spawns = spawns;
-        SectorServer.spawns.forEach(spawn -> PlayerDeath.spawnMap.put(spawn, 0));
+        SectorServer.spawns.forEach(spawn -> PlayerRespawn.spawnMap.put(spawn, 0));
         SectorServer.protectedBlocks = protectedBlocks;
         serverName = getPlugin().getConfig().getString("name"); //musi zostać, musi być w configu
         boolean isWeatherForwader = getPlugin().getConfig().getBoolean("weatherForwarder");
