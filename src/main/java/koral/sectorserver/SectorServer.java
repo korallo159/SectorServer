@@ -1,7 +1,9 @@
 package koral.sectorserver;
+
 import koral.sectorserver.listeners.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.WorldBorder;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.entity.Player;
@@ -12,16 +14,54 @@ import org.json.simple.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 //TODO: Bossbar, powiadomienie, że zbliżasz się do sektora, jak blisko niego jestes.
-//TODO: rzeczy zwiazane ze spawnem - po smierci trafia albo do bazy, albo na stpawna z innego serwera.
 //TODO: komenda /spawn przenosi na mniej obciazony /spawn
 
 //TODO: gildyjny home musi teleportowac na dobry sektor z dobrą gildią. tak samo /sethome /home. moj pomysl: teleportacja najpierw nasluchuje na kordy, przelicza je w ktorym to sektorze i wysyla info na ten serwer. Przenosi gracza a potem dzieje sie wszystko jak normalnie. czyli wykonuje sie
 
 
 public final class SectorServer extends JavaPlugin implements Listener, CommandExecutor {
+    public static class OtherServer {
+        public static OtherServer s_n; // -z
+        public static OtherServer s_e; // +x
+        public static OtherServer s_s; // +z
+        public static OtherServer s_w; // -x
+
+        public final Integer x;
+        public final Integer z;
+
+        public final String server;
+
+        public final boolean positive;
+
+
+        public OtherServer(String server, Integer x, Integer z, boolean positive) {
+            this.positive = positive;
+            this.server = server;
+            this.x = x;
+            this.z = z;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("OtherSErver(%s, %s, %s)", server, x, z);
+        }
+
+        public static List<OtherServer> getNonNull() {
+            ArrayList<OtherServer> list = new ArrayList<>();
+
+            for (OtherServer server : new OtherServer[] {s_n, s_e, s_s, s_w})
+                doForNonNull(server, list::add);
+
+            return list;
+        }
+    }
+
+
     public static SectorServer plugin;
     public static PluginChannelListener pcl;
 
@@ -36,6 +76,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     public static List<String> spawns;
     public static int width; // szerokość pojedyńczego serwera
     public static int protectedBlocks;
+    public static int bossbarDistance = 20; // TODO: wczytywać
 
         public static SectorServer getPlugin() {
             return plugin;
@@ -64,6 +105,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     public static void reloadPlugin() {
         SocketClient.connectToSocketServer();
     }
+
     static void reloadPlugin(List<String> servers, List<String> spawns, int width, double shiftX, double shiftZ, int protectedBlocks) {
         getPlugin().reloadConfig();
 
@@ -94,21 +136,59 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         System.out.println(serverName + " " + n);
         System.out.println(n % (double) count + " " + n / count);
 
+        Function<Integer, Double> coord = x -> x * width + width / 2.0;
+        Function<World, Location> getCenter = world -> new Location(world, coord.apply(n % count) + shiftX, 0, coord.apply(n / count) + shiftZ);
+
+        // Border
         Bukkit.getWorlds().forEach(world -> {
             WorldBorder border = world.getWorldBorder();
 
-            Function<Integer, Double> coord = x -> x * width + width / 2.0;
-
-            border.setCenter(new Location(world, coord.apply(n % count), 0, coord.apply(n / count)));
+            border.setCenter(getCenter.apply(world));
             border.setSize(width + 2);
             border.setWarningDistance(0);
             border.setDamageBuffer(5);
         });
 
+        Location center = getCenter.apply(Bukkit.getWorlds().get(0));
+
+
+        OtherServer.s_n = null;
+        OtherServer.s_e = null;
+        OtherServer.s_s = null;
+        OtherServer.s_w = null;
+
+        if (n % serversPerSide() != serversPerSide() - 1)
+            doForNonNull(getServer(n + 1), server ->
+                    OtherServer.s_e = new OtherServer(server, center.getBlockX() + width / 2, null, true)); // +x
+
+        if (n % serversPerSide() != 0)
+            doForNonNull(getServer(n - 1), server ->
+                    OtherServer.s_w = new OtherServer(server, center.getBlockX() - width / 2 - 1, null, false)); // -x
+
+        if (n / serversPerSide() != serversPerSide() - 1)
+            doForNonNull(getServer(n + serversPerSide()), server ->
+                    OtherServer.s_s = new OtherServer(server, null, center.getBlockZ() + width / 2, true)); // +z
+
+        if (n / serversPerSide() != 0)
+            doForNonNull(getServer(n - serversPerSide()), server ->
+                    OtherServer.s_n = new OtherServer(server, null, center.getBlockZ() - width / 2 - 1, false)); // -z
+
+        System.out.println(center);
+        System.out.println("N " + OtherServer.s_n);
+        System.out.println("E " + OtherServer.s_e);
+        System.out.println("S " + OtherServer.s_s);
+        System.out.println("W " + OtherServer.s_w);
+
     }
 
+    public static <T> void doForNonNull(T obj, Consumer<T> cons) {
+            if (obj != null)
+                cons.accept(obj);
+    }
 
     public static String getServer(int s) {
+        if (s < 0 || s >= servers.size())
+            return null;
         return servers.get(s);
     }
     public static int serversCount() {

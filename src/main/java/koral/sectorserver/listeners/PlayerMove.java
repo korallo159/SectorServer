@@ -1,22 +1,78 @@
 package koral.sectorserver.listeners;
 
 import koral.sectorserver.SectorServer;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.metadata.FixedMetadataValue;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PlayerMove implements Listener {
+    private static String server; // dummy
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent e) {
-        int s1 = locToServer(e.getFrom());
-        int s2 = locToServer(e.getTo());
+        server = null;
 
-        String s2Name;
-        if (canPass(s1, s2) && !SectorServer.serverName.equals(s2Name = SectorServer.getServer(s2))) {
-            SectorServer.forwardCoordinates("customchannel", s2Name, e.getPlayer());
-            SectorServer.connectAnotherServer(SectorServer.getServer(s2), e.getPlayer());
+        forgetBossbars(e.getPlayer());
+
+        for (SectorServer.OtherServer _server : SectorServer.OtherServer.getNonNull())
+            SectorServer.doForNonNull(_server, s -> {
+                double distance;
+                if (s.x != null) distance = Math.abs(s.x - e.getTo().getX() + (s.positive ? 1 : 0));
+                else             distance = Math.abs(s.z - e.getTo().getZ() + (s.positive ? 1 : 0));
+
+                if (distance <= .5)
+                    server = s.server;
+                if (distance <= SectorServer.bossbarDistance)
+                    sendBossbar(e.getPlayer(), s.server, distance);
+            });
+
+        if (server != null) {
+            SectorServer.forwardCoordinates("customchannel", server, e.getPlayer());
+            SectorServer.connectAnotherServer(server, e.getPlayer());
         }
+    }
+    private void forgetBossbars(Player p) {
+        try {
+            List<BossBar> bossbars = (List<BossBar>) p.getMetadata("sector_bossbars").get(0).value();
+            bossbars.forEach(bossbar -> {
+                bossbar.setVisible(false);
+                bossbar.removePlayer(p);
+            });
+        } catch (Throwable e) {
+        }
+
+    }
+    private void sendBossbar(Player p, String server, double distance) {
+        BossBar bossbar = Bukkit.createBossBar(
+                ChatColor.RED + "Zbliżasz się do sektora " + server + ChatColor.GOLD + " " + ((int) distance) + ChatColor.YELLOW + "m",
+                BarColor.RED,
+                BarStyle.SOLID
+        );
+
+        bossbar.setVisible(true);
+        bossbar.setProgress(1 - distance / SectorServer.bossbarDistance);
+        bossbar.addPlayer(p);
+
+        List<BossBar> bossbars;
+        try {
+            bossbars = (List<BossBar>) p.getMetadata("sector_bossbars").get(0).value();
+        } catch (Throwable e) {
+            bossbars = new ArrayList<>();
+        }
+
+        bossbars.add(bossbar);
+
+        p.setMetadata("sector_bossbars", new FixedMetadataValue(SectorServer.getPlugin(), bossbars));
     }
 
 //TODO zrobic lepsze dotykanie tej bariery
@@ -39,7 +95,7 @@ public class PlayerMove implements Listener {
      *            wewnątrz jest wykonywane {@code loc = SectorServer.shiftLocation(loc)}
      * @return index servera jeśli lokacja należy do jednego z serwerów w innym przypadku -1
      */
-    int locToServer(Location loc) {
+    public static int locToServer(Location loc) {
         loc = SectorServer.shiftLocation(loc);
         if (loc.getX() > SectorServer.width * SectorServer.serversPerSide() || loc.getX() < 0)
             return -1;
