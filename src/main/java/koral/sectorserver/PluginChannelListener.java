@@ -101,6 +101,16 @@ public class PluginChannelListener implements PluginMessageListener {
 
     }
 
+    void ChatChannel(DataInputStream in) throws IOException{
+        if(Bukkit.getOnlinePlayers().isEmpty()) return;
+        short length = in.readShort();
+        byte[] data = new byte[length];
+        in.readFully(data);
+        String s = new String(data);
+        Bukkit.broadcastMessage(s);
+
+    }
+
 /*    @Override
     public synchronized void onPluginMessageReceived(String channel, Player player, byte[] message) {
         if (!channel.equals("BungeeCord")) {

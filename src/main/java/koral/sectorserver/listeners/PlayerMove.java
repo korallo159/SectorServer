@@ -37,8 +37,13 @@ public class PlayerMove implements Listener {
             });
 
         if (server != null) {
-            SectorServer.forwardCoordinates("customchannel", server, e.getPlayer());
-            SectorServer.connectAnotherServer(server, e.getPlayer());
+            if(!e.getPlayer().getScoreboardTags().contains("mimiAntyLog")) {
+                SectorServer.forwardCoordinates("customchannel", server, e.getPlayer());
+                SectorServer.connectAnotherServer(server, e.getPlayer());
+            }
+            else
+                e.getPlayer().sendMessage(ChatColor.RED + "Nie możesz zmieniać sektorów w trakcie walki");
+                                                                                                //TODO: jakies odepchniecie od bariery do tylu czy cos, jak jest w walce
         }
     }
     private void forgetBossbars(Player p) {

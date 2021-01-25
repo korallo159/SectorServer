@@ -72,11 +72,11 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     }
 
     public static String serverName;
-    private static List<String> servers;
+    public static List<String> servers;
     public static List<String> spawns;
     public static int width; // szerokość pojedyńczego serwera
     public static int protectedBlocks;
-    public static int bossbarDistance = 20; // TODO: wczytywać
+    public static int bossbarDistance = 30; // TODO: wczytywać
 
         public static SectorServer getPlugin() {
             return plugin;
@@ -92,6 +92,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
         getServer().getPluginManager().registerEvents(new PlayerMove(), this);
+        getServer().getPluginManager().registerEvents(new AsyncPlayerChat(), this);
         getServer().getPluginManager().registerEvents(new PlayerRespawn(), this);
         getServer().getPluginManager().registerEvents(new BlockPlace(), this);
         getServer().getPluginManager().registerEvents(new BlockBreak(), this);
