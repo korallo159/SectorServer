@@ -4,6 +4,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -13,7 +15,11 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Function;
+
+import static koral.sectorserver.listeners.PlayerJoin.randomSectorLoc;
 
 @SuppressWarnings("unused")
 public class PluginChannelListener implements PluginMessageListener {
@@ -109,6 +115,22 @@ public class PluginChannelListener implements PluginMessageListener {
         String s = new String(data);
         Bukkit.broadcastMessage(s);
 
+    }
+public static Set<String> rtpPlayers = new HashSet<>();
+    void RtpChannel(DataInputStream in) throws IOException{
+        short length = in.readShort();
+        byte[] data = new byte[length];
+        in.readFully(data);
+        String s = new String(data);
+        Player p = Bukkit.getPlayer(s);
+        if(p != null){
+            p.teleport(randomSectorLoc());
+            Bukkit.getScheduler().runTaskLater(SectorServer.getPlugin(), task ->{
+                p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 500, 1));
+            }, 20);
+        }
+        else
+            rtpPlayers.add(s);
     }
 
 /*    @Override
