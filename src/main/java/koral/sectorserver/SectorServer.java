@@ -18,8 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-//TODO Zablokowac liste komend w odleglosci protected blocks;
 //TODO w bazie danych zapisywac home, zeby mozna bylo sie teleportowac na rozne home z roznych serwerow/ zeby nie dalo sie uzywac home na gildiach
+//TODO teleportowanie miedzy serwerami.
+//TODO tpa miedzy serwerami
 //TODO zeby komenda z teleportowania do gildii, teleportowala do gildii
 
 public final class SectorServer extends JavaPlugin implements Listener, CommandExecutor {
@@ -72,9 +73,11 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     public static String serverName;
     public static List<String> servers;
     public static List<String> spawns;
+    public static List<String> blockedCmds;
     public static int width; // szerokość pojedyńczego serwera
     public static int protectedBlocks;
-    public static int bossbarDistance = 30; // TODO: wczytywać
+    public static int bossbarDistance;
+    public static int blockedCmdsDistance = 100;
 
         public static SectorServer getPlugin() {
             return plugin;
@@ -94,6 +97,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getServer().getPluginManager().registerEvents(new PlayerRespawn(), this);
         getServer().getPluginManager().registerEvents(new BlockPlace(), this);
         getServer().getPluginManager().registerEvents(new BlockBreak(), this);
+        getServer().getPluginManager().registerEvents(new PlayerCommandPreprocess(), this);
 
         reloadPlugin();
     }
@@ -105,7 +109,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         SocketClient.connectToSocketServer();
     }
 
-    static void reloadPlugin(List<String> servers, List<String> spawns, int width, double shiftX, double shiftZ, int protectedBlocks) {
+    static void reloadPlugin(List<String> servers, List<String> spawns, int width, double shiftX, double shiftZ, int protectedBlocks, List<String> blockedCmds, int bossbarDistance) {
         getPlugin().reloadConfig();
 
         SectorServer.width = width;
@@ -115,6 +119,8 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         SectorServer.spawns = spawns;
         SectorServer.spawns.forEach(spawn -> PlayerRespawn.spawnMap.put(spawn, 0));
         SectorServer.protectedBlocks = protectedBlocks;
+        SectorServer.blockedCmds = blockedCmds;
+        SectorServer.bossbarDistance = bossbarDistance;
         serverName = getPlugin().getConfig().getString("name"); //musi zostać, musi być w configu
         boolean isWeatherForwader = getPlugin().getConfig().getBoolean("weatherForwarder");
         if(isWeatherForwader)

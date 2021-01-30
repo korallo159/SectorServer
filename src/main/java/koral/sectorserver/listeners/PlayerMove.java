@@ -1,6 +1,7 @@
 package koral.sectorserver.listeners;
 
 import koral.sectorserver.SectorServer;
+import koral.sectorserver.util.Cooldowns;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -14,10 +15,12 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class PlayerMove implements Listener {
     private static String server; // dummy
+    Cooldowns cooldown = new Cooldowns(new HashMap<>());
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent e) {
         server = null;
@@ -38,8 +41,12 @@ public class PlayerMove implements Listener {
 
         if (server != null) {
             if(!e.getPlayer().getScoreboardTags().contains("mimiAntyLog")) {
-                SectorServer.forwardCoordinates("customchannel", server, e.getPlayer());
-                SectorServer.connectAnotherServer(server, e.getPlayer());
+                if(!cooldown.hasCooldown(e.getPlayer(), 5)) {
+                    cooldown.setSystemTime(e.getPlayer());
+                    SectorServer.forwardCoordinates("customchannel", server, e.getPlayer());
+                    SectorServer.connectAnotherServer(server, e.getPlayer());
+
+                }
             }
             else
                 e.getPlayer().sendMessage(ChatColor.RED + "Nie możesz zmieniać sektorów w trakcie walki");
