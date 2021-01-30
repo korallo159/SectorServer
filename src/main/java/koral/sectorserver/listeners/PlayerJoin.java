@@ -20,6 +20,7 @@ public class PlayerJoin implements Listener {
         Player player = event.getPlayer();
         if(PluginChannelListener.lokacjaGracza.containsKey(player.getName()))
             player.teleport(PluginChannelListener.lokacjaGracza.remove(player.getName()));
+
         if(PluginChannelListener.rtpPlayers.contains(player.getName())){
             player.teleport(randomSectorLoc());
             Bukkit.getScheduler().runTaskLater(SectorServer.getPlugin(), task ->{

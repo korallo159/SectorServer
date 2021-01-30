@@ -18,11 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-//TODO: Bossbar, powiadomienie, że zbliżasz się do sektora, jak blisko niego jestes.
-//TODO: komenda /spawn przenosi na mniej obciazony /spawn
-
-//TODO: gildyjny home musi teleportowac na dobry sektor z dobrą gildią. tak samo /sethome /home. moj pomysl: teleportacja najpierw nasluchuje na kordy, przelicza je w ktorym to sektorze i wysyla info na ten serwer. Przenosi gracza a potem dzieje sie wszystko jak normalnie. czyli wykonuje sie
-
+//TODO Zablokowac liste komend w odleglosci protected blocks;
+//TODO w bazie danych zapisywac home, zeby mozna bylo sie teleportowac na rozne home z roznych serwerow/ zeby nie dalo sie uzywac home na gildiach
+//TODO zeby komenda z teleportowania do gildii, teleportowala do gildii
 
 public final class SectorServer extends JavaPlugin implements Listener, CommandExecutor {
     public static class OtherServer {
