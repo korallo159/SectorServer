@@ -252,6 +252,18 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         }
         sendPluginMessage(player, byteArrayOutputStream.toByteArray());
     }
+
+    public static void sendToBungeeCord(Player p, String subchannel, String message){
+        ByteArrayOutputStream b = new ByteArrayOutputStream();
+        DataOutputStream out = new DataOutputStream(b);
+        try {
+            out.writeUTF(subchannel);
+            out.writeUTF(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        sendPluginMessage(p, b.toByteArray());
+    }
 }
 
 

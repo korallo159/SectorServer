@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -116,7 +117,21 @@ public class PluginChannelListener implements PluginMessageListener {
         Bukkit.broadcastMessage(s);
 
     }
-public static Set<String> rtpPlayers = new HashSet<>();
+    public static Map<String, String> adminTpPlayers = new HashMap<>();
+    void TpChannel(DataInputStream in) throws IOException {
+        String data = in.readUTF();
+        JSONParser parser = new JSONParser();
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = (JSONObject) parser.parse(data);
+        } catch (ParseException e) {
+            e.printStackTrace();
+ }
+   adminTpPlayers.put(jsonObject.get("player").toString(), jsonObject.get("target").toString());
+
+    }
+
+    public static Set<String> rtpPlayers = new HashSet<>();
     void RtpChannel(DataInputStream in) throws IOException{
         short length = in.readShort();
         byte[] data = new byte[length];

@@ -28,6 +28,11 @@ public class PlayerJoin implements Listener {
             }, 20);
             PluginChannelListener.rtpPlayers.remove(player.getName());
         }
+
+        if(PluginChannelListener.adminTpPlayers.containsKey(player.getName())){
+            player.teleport(Bukkit.getPlayer(PluginChannelListener.adminTpPlayers.get(player.getName())));
+            PluginChannelListener.adminTpPlayers.remove(player.getName());
+        }
     }
 
     public static Location randomSectorLoc(){
