@@ -1,5 +1,6 @@
 package koral.sectorserver;
 import koral.sectorserver.listeners.PlayerRespawn;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -148,15 +149,42 @@ public class PluginChannelListener implements PluginMessageListener {
             rtpPlayers.add(s);
     }
 
-/*    @Override
-    public synchronized void onPluginMessageReceived(String channel, Player player, byte[] message) {
-        if (!channel.equals("BungeeCord")) {
+/*
+    void TpaChannel(DataInputStream in) throws IOException, ParseException{
+        short length = in.readShort();
+        byte[] data = new byte[length];
+        in.readFully(data);
+        String s = new String(data);
+        JSONParser parser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) parser.parse(s);
+        if (jsonObject.containsKey("accept")) {
+           boolean accept = (boolean) jsonObject.get("accept");
+            System.out.println(accept);
+            if (Bukkit.getPlayer(jsonObject.get("target").toString()) != null)
+                if (accept) {
+                    Bukkit.getPlayer(jsonObject.get("target").toString()).sendMessage(ChatColor.GREEN + "Prośba o teleportację zaakceptowana. Nie ruszaj się przez 10 sekund");
+
+                    if("".equalsIgnoreCase("")){
+                    }
+                } else
+                    Bukkit.getPlayer(jsonObject.get("target").toString()).sendMessage("Prośba o teleportacje odrzucona.");
+
             return;
         }
-        ByteArrayDataInput byteArrayDataInput = ByteStreams.newDataInput(message);
-        String input = byteArrayDataInput.readUTF();
-        SectorServer.getPlugin(SectorServer.class).getLogger().info(input);
+
+        String tpaSender = (String) jsonObject.get("player");
+        String tpaReceiver = (String) jsonObject.get("target");
+        if (Bukkit.getPlayer(tpaReceiver) != null) {
+            SectorServer.tpaMap.put(tpaReceiver, tpaSender);
+            Bukkit.getScheduler().runTaskLater(SectorServer.getPlugin(), () -> {
+                SectorServer.tpaMap.remove(tpaReceiver);
+            }, 400);
+            Bukkit.getPlayer(tpaReceiver).sendMessage(ChatColor.RED + "Dostałeś prośbę o teleportację od gracza " + tpaSender + " możesz użyć /tpdeny lub prośba " +
+                    "zniknie za 20 sekund");
+        }
+
     }
  */
-
 }
+
+

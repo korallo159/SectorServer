@@ -1,5 +1,6 @@
 package koral.sectorserver;
 
+import koral.sectorserver.commands.Spawn;
 import koral.sectorserver.listeners.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -15,6 +16,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -98,6 +100,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getServer().getPluginManager().registerEvents(new BlockPlace(), this);
         getServer().getPluginManager().registerEvents(new BlockBreak(), this);
         getServer().getPluginManager().registerEvents(new PlayerCommandPreprocess(), this);
+        getCommand("spawn").setExecutor(new Spawn());
 
         reloadPlugin();
     }
@@ -263,6 +266,48 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
             e.printStackTrace();
         }
         sendPluginMessage(p, b.toByteArray());
+    }
+
+    public static HashMap<String, String> tpaMap = new HashMap<>();
+    public static void sendTpaRequest(String subchannel, String server, Player player, String target) {
+        try {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            DataOutputStream out = new DataOutputStream(byteArrayOutputStream);
+            out.writeUTF("Forward");
+            out.writeUTF(server);
+            out.writeUTF(subchannel);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("player", player.getName());
+            jsonObject.put("target", target);
+            String s = jsonObject.toJSONString();
+            byte[] data = s.getBytes();
+            out.writeShort(data.length);
+            out.write(data);
+            sendPluginMessage(player, byteArrayOutputStream.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void sendTpaAcceptation(String subchannel, String server, Player player, String target, boolean accept) {
+        try {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            DataOutputStream out = new DataOutputStream(byteArrayOutputStream);
+            out.writeUTF("Forward");
+            out.writeUTF(server);
+            out.writeUTF(subchannel);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("player", player.getName());
+            jsonObject.put("target", target);
+            jsonObject.put("accept", accept);
+            String s = jsonObject.toJSONString();
+            byte[] data = s.getBytes();
+            out.writeShort(data.length);
+            out.write(data);
+            sendPluginMessage(player, byteArrayOutputStream.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 
