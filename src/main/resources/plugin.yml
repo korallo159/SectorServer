@@ -3,4 +3,23 @@ version: ${project.version}
 main: koral.sectorserver.SectorServer
 api-version: 1.16
 commands:
+  tp:
+    # /tp player player
+    # sender -> proxy | p1 -> p2
+    # proxy -> s2 | ? koordy p2 && s1 && p1
+    # s2 -> s1 | koordy && p1
+    # s1. Teleport.tp (p1, koordy)
+    #
+    # /tp player
+    # ^  p1 = sender
+    #
+    # /tp x y z
+    # s1. Teleport.tp (sender, koordy)
+    #
+    # /tp player x y z
+    # sender -> proxy | p2 && koordy
+    # proxy -> s2 | p2 && koordy
+    # s2. Teleport (p2, koordy)
+    #
+    usage: /tp [<player> (player) | (player) <x> <y> <z>]
   spawn:

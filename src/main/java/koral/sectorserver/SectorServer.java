@@ -1,6 +1,7 @@
 package koral.sectorserver;
 
 import koral.sectorserver.commands.Spawn;
+import koral.sectorserver.commands.TeleportCommand;
 import koral.sectorserver.listeners.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -101,6 +102,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getServer().getPluginManager().registerEvents(new BlockBreak(), this);
         getServer().getPluginManager().registerEvents(new PlayerCommandPreprocess(), this);
         getCommand("spawn").setExecutor(new Spawn());
+        getCommand("tp").setExecutor(new TeleportCommand());
 
         reloadPlugin();
     }
@@ -212,36 +214,24 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     }
 
 
+    public static JSONObject toJson(Location loc) {
+        JSONObject jsonObject = new JSONObject();
 
-    public static void forwardCoordinates(String subchannel, String target, Player player) {
-        try {
-            ByteArrayOutputStream b = new ByteArrayOutputStream();
-            DataOutputStream out = new DataOutputStream(b);
+        jsonObject.put("world", loc.getWorld().getName());
+        jsonObject.put("pitch", loc.getPitch());
+        jsonObject.put("yaw", loc.getYaw());
+        jsonObject.put("x", loc.getX());
+        jsonObject.put("y", loc.getY());
+        jsonObject.put("z", loc.getZ());
 
-            out.writeUTF("Forward");
-            out.writeUTF(target);
-            out.writeUTF(subchannel); // "customchannel" for example
-
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("player", player.getName());
-            jsonObject.put("world", player.getLocation().getWorld().getName());
-            jsonObject.put("pitch", player.getLocation().getPitch());
-            jsonObject.put("yaw", player.getLocation().getYaw());
-            jsonObject.put("x", player.getLocation().getX());
-            jsonObject.put("y", player.getLocation().getY());
-            jsonObject.put("z", player.getLocation().getZ());
-
-            String s = jsonObject.toJSONString();
-            byte[] data = s.getBytes();
-            out.writeShort(data.length);
-            out.write(data);
-
-            sendPluginMessage(player, b.toByteArray());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        return jsonObject;
     }
-
+    public static Location toLocation(JSONObject json) {
+        Function<String, Double> coord = str -> (double) json.get(str);
+        return new Location(Bukkit.getWorld((String) json.get("world")),
+                coord.apply("x"), coord.apply("y"), coord.apply("z"),
+                (float) (double) json.get("yaw"), (float) (double) json.get("pitch"));
+    }
 
     public static void connectAnotherServer(String server, Player player) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -256,7 +246,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         sendPluginMessage(player, byteArrayOutputStream.toByteArray());
     }
 
-    public static void sendToBungeeCord(Player p, String subchannel, String message){
+    public static void sendToBungeeCord(Player p, String subchannel, String message) {
         ByteArrayOutputStream b = new ByteArrayOutputStream();
         DataOutputStream out = new DataOutputStream(b);
         try {

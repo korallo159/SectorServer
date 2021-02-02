@@ -2,6 +2,7 @@ package koral.sectorserver.listeners;
 
 import koral.sectorserver.SectorServer;
 import koral.sectorserver.util.Cooldowns;
+import koral.sectorserver.util.Teleport;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -43,14 +44,13 @@ public class PlayerMove implements Listener {
             if(!e.getPlayer().getScoreboardTags().contains("mimiAntyLog")) {
                 if(!cooldown.hasCooldown(e.getPlayer(), 5)) {
                     cooldown.setSystemTime(e.getPlayer());
-                    SectorServer.forwardCoordinates("customchannel", server, e.getPlayer());
-                    SectorServer.connectAnotherServer(server, e.getPlayer());
-
+                    Teleport.teleport(e.getPlayer(), e.getTo());
                 }
             }
-            else
+            else {
                 e.getPlayer().sendMessage(ChatColor.RED + "Nie możesz zmieniać sektorów w trakcie walki");
-                                                                                                //TODO: jakies odepchniecie od bariery do tylu czy cos, jak jest w walce
+                e.getPlayer().setVelocity(e.getPlayer().getLocation().getDirection().multiply(-3));
+            }
         }
     }
     private void forgetBossbars(Player p) {

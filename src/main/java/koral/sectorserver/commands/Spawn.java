@@ -21,7 +21,6 @@ public class Spawn implements CommandExecutor {
         return true;
     }
 
-
     private void spawnTimer(Player sender, Location lastLocation, int secondsLeft) {
         if (sender.getLocation().distance(lastLocation) > 1) {
             sender.sendMessage("§cPoruszyłeś się! Teleportacja anulowana.");

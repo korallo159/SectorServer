@@ -12,27 +12,40 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.HashMap;
 import java.util.Random;
 
+import static koral.sectorserver.SectorServer.doForNonNull;
+
 public class PlayerJoin implements Listener {
+    public static HashMap<String, Location> lokacjaGracza = new HashMap<>();
+    public static HashMap<String, String> graczeDoTp = new HashMap<>();
+
+    private Location locToTp; // dummy
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event){
+    public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if(PluginChannelListener.lokacjaGracza.containsKey(player.getName()))
-            player.teleport(PluginChannelListener.lokacjaGracza.remove(player.getName()));
+        locToTp = null;
 
-        if(PluginChannelListener.rtpPlayers.contains(player.getName())){
-            player.teleport(randomSectorLoc());
-            Bukkit.getScheduler().runTaskLater(SectorServer.getPlugin(), task ->{
-                player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 500, 1));
-            }, 20);
-            PluginChannelListener.rtpPlayers.remove(player.getName());
+        doForNonNull(lokacjaGracza.remove(player.getName()),
+                loc -> locToTp = loc);
+
+        doForNonNull(graczeDoTp.remove(player.getName()),
+                nick -> doForNonNull(Bukkit.getPlayer(nick),
+                        p -> locToTp = p.getLocation()));
+
+        if(PluginChannelListener.rtpPlayers.remove(player.getName())){
+            locToTp = randomSectorLoc();
+            Bukkit.getScheduler().runTaskLater(SectorServer.getPlugin(), task ->
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 500, 1)), 20);
         }
 
-        if(PluginChannelListener.adminTpPlayers.containsKey(player.getName())){
-            player.teleport(Bukkit.getPlayer(PluginChannelListener.adminTpPlayers.get(player.getName())));
-            PluginChannelListener.adminTpPlayers.remove(player.getName());
-        }
+
+        if (locToTp != null)
+            Bukkit.getScheduler().runTask(SectorServer.plugin,
+                    () -> player.teleport(locToTp));
+
+
     }
 
     public static Location randomSectorLoc(){
