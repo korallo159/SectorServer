@@ -233,7 +233,11 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
                 (float) (double) json.get("yaw"), (float) (double) json.get("pitch"));
     }
 
+
     public static void connectAnotherServer(String server, Player player) {
+        connectAnotherServer(server, player, false);
+    }
+    public static void connectAnotherServer(String server, Player player, boolean force) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DataOutputStream out = new DataOutputStream(byteArrayOutputStream);
 
@@ -243,6 +247,14 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        if (!force) {
+            ConnectToAnotherSectorEvent event = new ConnectToAnotherSectorEvent(player, server);
+            Bukkit.getPluginManager().callEvent(event);
+            if (event.isCancelled())
+                return;
+        }
+
         sendPluginMessage(player, byteArrayOutputStream.toByteArray());
     }
 
