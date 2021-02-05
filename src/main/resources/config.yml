@@ -3,3 +3,4 @@ socketport: 5500
 # Nazwa Serwera
 name: s1
 weatherForwader: true # <- Kazdy inny serwer bedzie nasluchiwal pogode z tego serwera,
+isOnlyForApi: false

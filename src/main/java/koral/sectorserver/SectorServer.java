@@ -90,20 +90,20 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         // Plugin startup logic
         plugin = this;
         saveDefaultConfig();
-
+        if(!getConfig().getBoolean("isOnlyForApi")) {
+            getServer().getPluginManager().registerEvents(this, this);
+            getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
+            getServer().getPluginManager().registerEvents(new PlayerMove(), this);
+            getServer().getPluginManager().registerEvents(new AsyncPlayerChat(), this);
+            getServer().getPluginManager().registerEvents(new PlayerRespawn(), this);
+            getServer().getPluginManager().registerEvents(new BlockPlace(), this);
+            getServer().getPluginManager().registerEvents(new BlockBreak(), this);
+            getServer().getPluginManager().registerEvents(new PlayerCommandPreprocess(), this);
+            getCommand("spawn").setExecutor(new Spawn());
+            getCommand("tp").setExecutor(new TeleportCommand());
+        }
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", pcl = new PluginChannelListener());
-        getServer().getPluginManager().registerEvents(this, this);
-        getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
-        getServer().getPluginManager().registerEvents(new PlayerMove(), this);
-        getServer().getPluginManager().registerEvents(new AsyncPlayerChat(), this);
-        getServer().getPluginManager().registerEvents(new PlayerRespawn(), this);
-        getServer().getPluginManager().registerEvents(new BlockPlace(), this);
-        getServer().getPluginManager().registerEvents(new BlockBreak(), this);
-        getServer().getPluginManager().registerEvents(new PlayerCommandPreprocess(), this);
-        getCommand("spawn").setExecutor(new Spawn());
-        getCommand("tp").setExecutor(new TeleportCommand());
-
         reloadPlugin();
     }
     @Override
@@ -149,15 +149,16 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         Function<Integer, Double> coord = x -> x * width + width / 2.0;
         Function<World, Location> getCenter = world -> new Location(world, coord.apply(n % count) + shiftX, 0, coord.apply(n / count) + shiftZ);
 
-        // Border
-        Bukkit.getWorlds().forEach(world -> {
-            WorldBorder border = world.getWorldBorder();
+        if(!SectorServer.getPlugin().getConfig().getBoolean("isOnlyForApi")) {
+            Bukkit.getWorlds().forEach(world -> {
+                WorldBorder border = world.getWorldBorder();
 
-            border.setCenter(getCenter.apply(world));
-            border.setSize(width + 2);
-            border.setWarningDistance(0);
-            border.setDamageBuffer(5);
-        });
+                border.setCenter(getCenter.apply(world));
+                border.setSize(width + 2);
+                border.setWarningDistance(0);
+                border.setDamageBuffer(5);
+            });
+        }
 
         Location center = getCenter.apply(Bukkit.getWorlds().get(0));
 
@@ -182,13 +183,6 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         if (n / serversPerSide() != 0)
             doForNonNull(getServer(n - serversPerSide()), server ->
                     OtherServer.s_n = new OtherServer(server, null, center.getBlockZ() - width / 2 - 1, false)); // -z
-
-        System.out.println(center);
-        System.out.println("N " + OtherServer.s_n);
-        System.out.println("E " + OtherServer.s_e);
-        System.out.println("S " + OtherServer.s_s);
-        System.out.println("W " + OtherServer.s_w);
-
     }
 
     public static <T> void doForNonNull(T obj, Consumer<T> cons) {
