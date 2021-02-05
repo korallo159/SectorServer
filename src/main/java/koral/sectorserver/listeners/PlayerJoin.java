@@ -45,7 +45,12 @@ public class PlayerJoin implements Listener {
             Bukkit.getScheduler().runTask(SectorServer.plugin,
                     () -> player.teleport(locToTp));
 
-
+        if(PluginChannelListener.tpaTeleport.containsKey(event.getPlayer().getName())){
+            Player target = Bukkit.getPlayer(PluginChannelListener.tpaTeleport.get(event.getPlayer().getName()));
+            Bukkit.getScheduler().runTask(SectorServer.getPlugin(), () -> event.getPlayer().teleport(target.getLocation()));
+            System.out.println(PluginChannelListener.tpaTeleport.get(event.getPlayer().getName()));
+            PluginChannelListener.tpaTeleport.remove(event.getPlayer().getName());
+        }
     }
 
     public static Location randomSectorLoc(){

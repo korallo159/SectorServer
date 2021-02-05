@@ -12,12 +12,15 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
+import java.io.*;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import static koral.sectorserver.SectorServer.connectAnotherServer;
+import static koral.sectorserver.SectorServer.sendPluginMessage;
+import static koral.sectorserver.commands.Tpa.sendPlayerTpInfo;
+import static koral.sectorserver.commands.Tpa.tpaTimer;
 import static koral.sectorserver.listeners.PlayerJoin.randomSectorLoc;
 
 @SuppressWarnings("unused")
@@ -32,7 +35,11 @@ public class PluginChannelListener implements PluginMessageListener {
         try {
             DataInputStream in = new DataInputStream(new ByteArrayInputStream(message));
             subchannel = in.readUTF();
-            PluginChannelListener.class.getDeclaredMethod(subchannel, DataInputStream.class).invoke(this, in);
+            try{
+                PluginChannelListener.class.getDeclaredMethod(subchannel, DataInputStream.class).invoke(this, in);
+            }catch (NoSuchMethodException exception){
+                PluginChannelListener.class.getDeclaredMethod(subchannel, DataInputStream.class, Player.class).invoke(this, in, player);
+            }
         } catch(NoSuchMethodException ex) {
         } catch(Throwable ex) {
             System.out.println("Problem z odbieraniem subchannelu " + subchannel);
@@ -157,6 +164,45 @@ public class PluginChannelListener implements PluginMessageListener {
     void log(DataInputStream in) throws IOException {
         System.out.println(in.readUTF());
     }
+    public static HashMap<String, String> tpaMap = new HashMap<>();
+    public static HashMap<String, String> tpaTeleport = new HashMap<>();
+    void TpaChannel(DataInputStream in, Player player) throws IOException, ParseException {
+            short length = in.readShort();
+            byte[] data = new byte[length];
+            in.readFully(data);
+            String s = new String(data);
+            JSONParser parser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) parser.parse(s);
+            if (jsonObject.containsKey("accept")) {
+                boolean accept = (boolean) jsonObject.get("accept");
+                String server = (String) jsonObject.get("server");
+                if (Bukkit.getPlayer(jsonObject.get("target").toString()) != null)
+                    if (accept) {
+                        player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 11*20, 0, false, false, false));
+                        player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 11*20, 2, false, false, false));
+                        tpaTimer(server, player, jsonObject, player.getLocation(), 10);
+                    } else
+                        Bukkit.getPlayer(jsonObject.get("target").toString()).sendMessage("§2[§aTPA§2] §c" + "Prośba o teleportacje odrzucona.");
+                return;
+            }
+            if(jsonObject.containsKey("accepted")){
+                String tpaAccepter = (String) jsonObject.get("player"); // greymen15 w przypadku wysylania
+                String tpaReceiver = (String) jsonObject.get("target"); // korallo
+                tpaTeleport.put(tpaAccepter, tpaReceiver);
+                Bukkit.getScheduler().runTaskLater(SectorServer.getPlugin(), () -> tpaTeleport.remove(tpaAccepter), 100); // gdyby jakimś cudem gracza nie przeniosło od razu
+            }
+            String tpaSender = (String) jsonObject.get("player");
+            String tpaReceiver = (String) jsonObject.get("target");
+            if (Bukkit.getPlayer(tpaReceiver) != null) {
+                tpaMap.put(tpaReceiver.toLowerCase(), tpaSender);
+                Bukkit.getScheduler().runTaskLater(SectorServer.getPlugin(), () -> tpaMap.remove(tpaReceiver), 20 * 25);
+                Bukkit.getPlayer(tpaReceiver).sendMessage("§2[§aTPA§2] " + "§cDostałeś prośbę o teleportację od gracza " + tpaSender +
+                        " aby zaakceptować wpisz /tpaccept");
+            }
+    }
+
+
+
 
 /*
     void TpaChannel(DataInputStream in) throws IOException, ParseException{

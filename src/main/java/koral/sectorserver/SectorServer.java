@@ -2,6 +2,7 @@ package koral.sectorserver;
 
 import koral.sectorserver.commands.Spawn;
 import koral.sectorserver.commands.TeleportCommand;
+import koral.sectorserver.commands.Tpa;
 import koral.sectorserver.listeners.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -92,18 +93,24 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         saveDefaultConfig();
         if(!getConfig().getBoolean("isOnlyForApi")) {
             getServer().getPluginManager().registerEvents(this, this);
-            getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
             getServer().getPluginManager().registerEvents(new PlayerMove(), this);
-            getServer().getPluginManager().registerEvents(new AsyncPlayerChat(), this);
             getServer().getPluginManager().registerEvents(new PlayerRespawn(), this);
             getServer().getPluginManager().registerEvents(new BlockPlace(), this);
             getServer().getPluginManager().registerEvents(new BlockBreak(), this);
             getServer().getPluginManager().registerEvents(new PlayerCommandPreprocess(), this);
             getCommand("spawn").setExecutor(new Spawn());
-            getCommand("tp").setExecutor(new TeleportCommand());
         }
+
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", pcl = new PluginChannelListener());
+        getServer().getPluginManager().registerEvents(new AsyncPlayerChat(), this);
+        getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
+        getCommand("tp").setExecutor(new TeleportCommand());
+        Tpa tpa = new Tpa();
+        getCommand("tpa").setExecutor(tpa);
+        getCommand("tpaccept").setExecutor(tpa);
+        getCommand("tpdeny").setExecutor(tpa);
+
         reloadPlugin();
     }
     @Override
