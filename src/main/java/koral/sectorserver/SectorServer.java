@@ -106,10 +106,12 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
         getCommand("tp").setExecutor(new TeleportCommand());
         Tpa tpa = new Tpa();
+        Msg msg = new Msg();
         getCommand("tpa").setExecutor(tpa);
         getCommand("tpaccept").setExecutor(tpa);
         getCommand("tpdeny").setExecutor(tpa);
-        getCommand("msg").setExecutor(new Msg());
+        getCommand("msg").setExecutor(msg);
+        getCommand("msgtoggle").setExecutor(msg);
 
         reloadPlugin();
 

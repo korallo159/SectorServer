@@ -8,12 +8,17 @@ commands:
   spawn:
   tpa:
     description: tpa request
-    permission: guildsaddons.tpa
+    permission: sectorserver.tpa
     usage: /tpa <nick>
   tpaccept:
     description: tpa request
-    permission: guildsaddons.tpa
+    permission: sectorserver.tpa
   tpdeny:
     description: tpa request
-    permission: guildsaddons.tpa
+    permission: sectorserver.tpa
   msg:
+    description: msg
+    permission: sectorserver.msg
+  msgtoggle:
+    description: msg toggle
+    permission: sectorserver.msg

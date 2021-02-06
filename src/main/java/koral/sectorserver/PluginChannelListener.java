@@ -208,6 +208,7 @@ public class PluginChannelListener implements PluginMessageListener {
         if(Bukkit.getPlayer(target) != null && !msgMute.contains(target))
             Bukkit.getPlayer(target).sendMessage(new TextComponent( "§6[" + "§b" + sender + "§6 -> §bja" + "§6]§7" + message.replaceFirst(sender, "").replaceFirst(target, "")));
     }
+    //todo: optional completer tylko na sektorach.
     public static Collection collection;
     void PlayerList(DataInputStream in) throws IOException{
         String server = in.readUTF();

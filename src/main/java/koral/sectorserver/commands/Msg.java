@@ -34,7 +34,7 @@ public class Msg implements CommandExecutor, TabExecutor {
 //TODO: przesylac blokady na kazdy serwer.
 //TODO: komenda /ignore
         if(!cooldown.hasCooldown((Player) sender, 5, "§cMusisz jeszcze chwilę odczeskać aby ponownie wyśłać wiadomość.")) {
-            if (args[0].equalsIgnoreCase("toggle")) {
+            if (command.getName().equalsIgnoreCase("msgtoggle")) {
                 if (msgMute.contains(sender.getName())) {
                     msgMute.remove(sender.getName());
                     sender.sendMessage("§c Nie ignorujesz już wiadomości innych graczy");
