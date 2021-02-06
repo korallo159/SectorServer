@@ -16,3 +16,4 @@ commands:
   tpdeny:
     description: tpa request
     permission: guildsaddons.tpa
+  msg:

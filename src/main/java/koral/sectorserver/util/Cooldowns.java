@@ -24,11 +24,9 @@ public class Cooldowns {
         if (cooldown.containsKey(player.getUniqueId().toString())) {
             if (cooldown.get(player.getUniqueId().toString()) + time >= (System.currentTimeMillis() / 1000)) {
                 return true;
-            } else
-                return false;
+            }
         }
-        else
-            return false;
+      return false;
     }
 
     public boolean hasCooldown(Player player, Integer time, String message) {
@@ -37,10 +35,8 @@ public class Cooldowns {
                 player.sendMessage(message);
       //                 player.sendMessage(ChatColor.RED +  "Musisz odczekać jeszcze " + (cooldown.get(player.getUniqueId().toString()) + time - System.currentTimeMillis() / 1000) + "sekund aby to zrobić");
                 return true;
-            } else
-                return false;
+            }
         }
-        else
-            return false;
+      return false;
     }
 }

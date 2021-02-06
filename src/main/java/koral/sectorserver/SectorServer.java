@@ -1,5 +1,6 @@
 package koral.sectorserver;
 
+import koral.sectorserver.commands.Msg;
 import koral.sectorserver.commands.Spawn;
 import koral.sectorserver.commands.TeleportCommand;
 import koral.sectorserver.commands.Tpa;
@@ -22,9 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-//TODO w bazie danych zapisywac home, zeby mozna bylo sie teleportowac na rozne home z roznych serwerow/ zeby nie dalo sie uzywac home na gildiach
-//TODO teleportowanie miedzy serwerami.
-//TODO tpa miedzy serwerami
 //TODO zeby komenda z teleportowania do gildii, teleportowala do gildii
 
 public final class SectorServer extends JavaPlugin implements Listener, CommandExecutor {
@@ -81,7 +79,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     public static int width; // szerokość pojedyńczego serwera
     public static int protectedBlocks;
     public static int bossbarDistance;
-    public static int blockedCmdsDistance = 100;
+    public static int blockedCmdsDistance = protectedBlocks;
 
         public static SectorServer getPlugin() {
             return plugin;
@@ -110,6 +108,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getCommand("tpa").setExecutor(tpa);
         getCommand("tpaccept").setExecutor(tpa);
         getCommand("tpdeny").setExecutor(tpa);
+        getCommand("msg").setExecutor(new Msg());
 
         reloadPlugin();
     }

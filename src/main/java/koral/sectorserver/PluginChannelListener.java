@@ -2,6 +2,7 @@ package koral.sectorserver;
 import koral.sectorserver.listeners.PlayerJoin;
 import koral.sectorserver.listeners.PlayerRespawn;
 import koral.sectorserver.util.Teleport;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -19,6 +20,7 @@ import java.util.Set;
 
 import static koral.sectorserver.SectorServer.connectAnotherServer;
 import static koral.sectorserver.SectorServer.sendPluginMessage;
+import static koral.sectorserver.commands.Msg.msgMute;
 import static koral.sectorserver.commands.Tpa.sendPlayerTpInfo;
 import static koral.sectorserver.commands.Tpa.tpaTimer;
 import static koral.sectorserver.listeners.PlayerJoin.randomSectorLoc;
@@ -48,7 +50,7 @@ public class PluginChannelListener implements PluginMessageListener {
     }
 
 
-    // Metody obsługujące informacje z subchanneli potrzebują mieć identyczną nazwę co subchannel i przymować parametr DataInputStream
+    // Metody obsługujące informacje z subchanneli potrzebują mieć identyczną nazwę co subchannel i przyjmować parametr DataInputStream
 
 
     void configChannel(DataInputStream in) throws IOException {
@@ -199,6 +201,17 @@ public class PluginChannelListener implements PluginMessageListener {
                 Bukkit.getPlayer(tpaReceiver).sendMessage("§2[§aTPA§2] " + "§cDostałeś prośbę o teleportację od gracza " + tpaSender +
                         " aby zaakceptować wpisz /tpaccept");
             }
+    }
+    void MsgChannel(DataInputStream in) throws IOException {
+        short length = in.readShort();
+        byte[] data = new byte[length];
+        in.readFully(data);
+        String message = new String(data);
+        String[] msgSplit = message.split(" ");
+       String sender = msgSplit[0];
+       String target = msgSplit[1];
+        if(Bukkit.getPlayer(target) != null && !msgMute.contains(target))
+            Bukkit.getPlayer(target).sendMessage(new TextComponent( "§6[" + "§b" + sender + "§6 -> §bja" + "§6]§7" + message.replace(sender, "").replace(target, "")));
     }
 
 
