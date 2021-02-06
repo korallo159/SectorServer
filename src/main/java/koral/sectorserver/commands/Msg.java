@@ -1,33 +1,39 @@
 package koral.sectorserver.commands;
 
+import com.google.common.collect.Iterables;
+import koral.sectorserver.PluginChannelListener;
 import koral.sectorserver.SectorServer;
 import koral.sectorserver.util.Cooldowns;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.json.simple.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-public class Msg implements CommandExecutor {
+public class Msg implements CommandExecutor, TabExecutor {
 
 
     public static Set<String> msgMute = new HashSet<>();
     Cooldowns cooldown = new Cooldowns(new HashMap<>());
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-
         if(!(sender instanceof Player)) return false;
-//TODO: Pobrac liste graczy z calej sieci
+//TODO: Pobrac liste graczy z calej sieci do tab completerow.
 //TODO: przesylac blokady na kazdy serwer.
 //TODO: komenda /ignore
-        if(!cooldown.hasCooldown((Player) sender, 5)) {
+        if(!cooldown.hasCooldown((Player) sender, 5, "§cMusisz jeszcze chwilę odczeskać aby ponownie wyśłać wiadomość.")) {
             if (args[0].equalsIgnoreCase("toggle")) {
                 if (msgMute.contains(sender.getName())) {
                     msgMute.remove(sender.getName());
@@ -39,15 +45,22 @@ public class Msg implements CommandExecutor {
                 return true;
             }
 
+
             if (args.length > 0) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(sender.getName()).append(" ");
-                for (int i = 0; i < args.length; i++) {
-                    sb.append(args[i]).append(" ");
+                if (!msgMute.contains(args[0])) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(sender.getName()).append(" ");
+                    for (int i = 0; i < args.length; i++) {
+                        sb.append(args[i]).append(" ");
+                    }
+                    forwardMessageToPlayer((Player) sender, args[0], sb.toString());
+                    String message = sb.toString().replaceFirst(args[0], "").replaceFirst(sender.getName(), "");
+
+                    sender.sendMessage("§6[" + "§b" + "Ty" + "§6 -> §b" + args[0] + "§6]§7" + message);
                 }
-                forwardMessageToPlayer((Player) sender, args[0], sb.toString());
-                sender.sendMessage( "§6[" + "§b" + "Ty" + "§6 -> §b" + args[0]  + "§6]§7" + sb.toString().replace(args[0], ""));
+                else sender.sendMessage("§cTen gracz blokuje wysyłanie wiadomości");
             }
+
             cooldown.setSystemTime(((Player) sender));
         }
 
@@ -71,5 +84,12 @@ public class Msg implements CommandExecutor {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        return (List<String>) PluginChannelListener.collection;
     }
 }

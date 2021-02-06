@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -16,11 +17,12 @@ import org.json.simple.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.util.HashMap;
+import java.util.List;
 
 import static koral.sectorserver.SectorServer.connectAnotherServer;
 import static koral.sectorserver.SectorServer.sendPluginMessage;
 
-public class Tpa implements CommandExecutor {
+public class Tpa implements CommandExecutor, TabExecutor {
     Cooldowns cooldown = new Cooldowns(new HashMap<>());
     HashMap<String, String> localTpMap = new HashMap<>();
     final String tpaPrefix = "§2[§aTPA§2] ";
@@ -163,5 +165,10 @@ public class Tpa implements CommandExecutor {
             player.sendTitle("§5§lTeleportacja", "§9Nie ruszaj się, za §a " + secondsLeft + "s §9 zostaniesz przeteleportowany", 0, 22, 5);
             Bukkit.getScheduler().runTaskLater(SectorServer.plugin, () -> tpaTimer(server, player, jsonObject, lastLocation,secondsLeft - 1), 20);
         }
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        return (List<String>) PluginChannelListener.collection;
     }
 }

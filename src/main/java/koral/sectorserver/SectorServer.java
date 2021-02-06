@@ -1,5 +1,6 @@
 package koral.sectorserver;
 
+import com.google.common.collect.Iterables;
 import koral.sectorserver.commands.Msg;
 import koral.sectorserver.commands.Spawn;
 import koral.sectorserver.commands.TeleportCommand;
@@ -111,6 +112,8 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getCommand("msg").setExecutor(new Msg());
 
         reloadPlugin();
+
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> getallPlayers(), 0, 100);
     }
     @Override
     public void onDisable() {
@@ -213,7 +216,6 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         player.sendPluginMessage(SectorServer.getPlugin(SectorServer.class), "BungeeCord", data);
     }
 
-
     public static JSONObject toJson(Location loc) {
         JSONObject jsonObject = new JSONObject();
 
@@ -299,6 +301,20 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
             sendPluginMessage(player, byteArrayOutputStream.toByteArray());
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void getallPlayers(){
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        DataOutputStream out = new DataOutputStream(byteArrayOutputStream);
+
+        try {
+            out.writeUTF("PlayerList");
+            out.writeUTF("ALL");
+            Player player = Iterables.getFirst(Bukkit.getOnlinePlayers(), null);
+            SectorServer.sendPluginMessage(player, byteArrayOutputStream.toByteArray());
+        } catch (IOException exception) {
+            exception.printStackTrace();
         }
     }
 }

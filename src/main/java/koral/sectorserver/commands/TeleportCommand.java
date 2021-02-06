@@ -2,6 +2,7 @@ package koral.sectorserver.commands;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import koral.sectorserver.PluginChannelListener;
 import koral.sectorserver.SectorServer;
 import koral.sectorserver.util.Teleport;
 import org.bukkit.Bukkit;
@@ -18,7 +19,7 @@ import java.util.function.Function;
 public class TeleportCommand implements TabExecutor {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return null;
+        return (List<String>) PluginChannelListener.collection;
     }
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {

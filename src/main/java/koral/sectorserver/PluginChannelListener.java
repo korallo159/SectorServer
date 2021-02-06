@@ -14,20 +14,15 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
-import static koral.sectorserver.SectorServer.connectAnotherServer;
-import static koral.sectorserver.SectorServer.sendPluginMessage;
 import static koral.sectorserver.commands.Msg.msgMute;
-import static koral.sectorserver.commands.Tpa.sendPlayerTpInfo;
 import static koral.sectorserver.commands.Tpa.tpaTimer;
 import static koral.sectorserver.listeners.PlayerJoin.randomSectorLoc;
 
 @SuppressWarnings("unused")
 public class PluginChannelListener implements PluginMessageListener {
-
+//TODO: wszystkie komendy;
     @Override
     public void onPluginMessageReceived(String channel, Player player, byte[] message) {
         if (!channel.equals("BungeeCord")) {
@@ -211,7 +206,14 @@ public class PluginChannelListener implements PluginMessageListener {
        String sender = msgSplit[0];
        String target = msgSplit[1];
         if(Bukkit.getPlayer(target) != null && !msgMute.contains(target))
-            Bukkit.getPlayer(target).sendMessage(new TextComponent( "§6[" + "§b" + sender + "§6 -> §bja" + "§6]§7" + message.replace(sender, "").replace(target, "")));
+            Bukkit.getPlayer(target).sendMessage(new TextComponent( "§6[" + "§b" + sender + "§6 -> §bja" + "§6]§7" + message.replaceFirst(sender, "").replaceFirst(target, "")));
+    }
+    public static Collection collection;
+    void PlayerList(DataInputStream in) throws IOException{
+        String server = in.readUTF();
+
+        String[] playerList = in.readUTF().split(", ");
+        collection = new ArrayList(Arrays.asList(playerList));
     }
 
 
