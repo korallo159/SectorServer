@@ -209,14 +209,41 @@ public class PluginChannelListener implements PluginMessageListener {
             Bukkit.getPlayer(target).sendMessage(new TextComponent( "§6[" + "§b" + sender + "§6 -> §bja" + "§6]§7" + message.replaceFirst(sender, "").replaceFirst(target, "")));
     }
     //todo: optional completer tylko na sektorach.
-    public static Collection collection;
+
+    //todo: optional completer tylko na sektorach.
+    public static ArrayList<String> playerCompleterList = new ArrayList<>();
     void PlayerList(DataInputStream in) throws IOException{
         String server = in.readUTF();
 
         String[] playerList = in.readUTF().split(", ");
-        collection = new ArrayList(Arrays.asList(playerList));
+        Arrays.asList(playerList).forEach(gracz -> {
+            if(!gracz.isEmpty())
+            playerCompleterList.add(gracz);
+        });
     }
 
+    void ItemShopChannel(DataInputStream in) throws IOException{
+        short length = in.readShort();
+        byte[] data = new byte[length];
+        in.readFully(data);
+        String message = new String(data);
+        String[] msgSplit = message.split(" ");
+        String sender = msgSplit[0];
+        String toPerform = message.replaceFirst(" ", "").replaceFirst(sender, "");
+        String toperform2 = toPerform.substring(0, toPerform.length() - 1);
+        Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), toperform2);
+
+    }
+    void RemoteChannel(DataInputStream in) throws IOException{
+        short length = in.readShort();
+        byte[] data = new byte[length];
+        in.readFully(data);
+        String message = new String(data);
+        String[] msgSplit = message.split(" ");
+        String server = msgSplit[0];
+        String toPerform = message.replaceFirst(" ", "").replaceFirst(server, "");
+        Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), toPerform);
+    }
 
 
 

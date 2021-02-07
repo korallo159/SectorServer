@@ -22,3 +22,5 @@ commands:
   msgtoggle:
     description: msg toggle
     permission: sectorserver.msg
+  remote:
+  itemshop:

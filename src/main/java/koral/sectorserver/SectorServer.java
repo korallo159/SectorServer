@@ -1,10 +1,7 @@
 package koral.sectorserver;
 
 import com.google.common.collect.Iterables;
-import koral.sectorserver.commands.Msg;
-import koral.sectorserver.commands.Spawn;
-import koral.sectorserver.commands.TeleportCommand;
-import koral.sectorserver.commands.Tpa;
+import koral.sectorserver.commands.*;
 import koral.sectorserver.listeners.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -112,10 +109,15 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getCommand("tpdeny").setExecutor(tpa);
         getCommand("msg").setExecutor(msg);
         getCommand("msgtoggle").setExecutor(msg);
-
+        getCommand("remote").setExecutor(new PerformRemote());
+        getCommand("itemshop").setExecutor(new ItemShop());
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+            PluginChannelListener.playerCompleterList.clear();
+            servers.forEach(serwer -> getPlayersFromServer(serwer));
+            spawns.forEach(spawn-> getPlayersFromServer(spawn));
+        }, 0, 100);
         reloadPlugin();
 
-        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> getallPlayers(), 0, 100);
     }
     @Override
     public void onDisable() {
@@ -264,61 +266,22 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         sendPluginMessage(p, b.toByteArray());
     }
 
-    public static HashMap<String, String> tpaMap = new HashMap<>();
-    public static void sendTpaRequest(String subchannel, String server, Player player, String target) {
-        try {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            DataOutputStream out = new DataOutputStream(byteArrayOutputStream);
-            out.writeUTF("Forward");
-            out.writeUTF(server);
-            out.writeUTF(subchannel);
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("player", player.getName());
-            jsonObject.put("target", target);
-            String s = jsonObject.toJSONString();
-            byte[] data = s.getBytes();
-            out.writeShort(data.length);
-            out.write(data);
-            sendPluginMessage(player, byteArrayOutputStream.toByteArray());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
-    public static void sendTpaAcceptation(String subchannel, String server, Player player, String target, boolean accept) {
-        try {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            DataOutputStream out = new DataOutputStream(byteArrayOutputStream);
-            out.writeUTF("Forward");
-            out.writeUTF(server);
-            out.writeUTF(subchannel);
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("player", player.getName());
-            jsonObject.put("target", target);
-            jsonObject.put("accept", accept);
-            String s = jsonObject.toJSONString();
-            byte[] data = s.getBytes();
-            out.writeShort(data.length);
-            out.write(data);
-            sendPluginMessage(player, byteArrayOutputStream.toByteArray());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void getallPlayers(){
+    public static void getPlayersFromServer(String serverName){
+        if(Bukkit.getOnlinePlayers().isEmpty()) return;
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DataOutputStream out = new DataOutputStream(byteArrayOutputStream);
-
         try {
             out.writeUTF("PlayerList");
-            out.writeUTF("ALL");
+            out.writeUTF(serverName);
             Player player = Iterables.getFirst(Bukkit.getOnlinePlayers(), null);
+
             SectorServer.sendPluginMessage(player, byteArrayOutputStream.toByteArray());
         } catch (IOException exception) {
             exception.printStackTrace();
         }
     }
+
 }
 
 

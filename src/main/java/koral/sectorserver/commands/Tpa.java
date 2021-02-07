@@ -169,6 +169,6 @@ public class Tpa implements CommandExecutor, TabExecutor {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        return (List<String>) PluginChannelListener.collection;
+        return PluginChannelListener.playerCompleterList;
     }
 }
