@@ -206,7 +206,7 @@ public class PluginChannelListener implements PluginMessageListener {
        String sender = msgSplit[0];
        String target = msgSplit[1];
         if(Bukkit.getPlayer(target) != null && !msgMute.contains(target))
-            Bukkit.getPlayer(target).sendMessage(new TextComponent( "§6[" + "§b" + sender + "§6 -> §bja" + "§6]§7" + message.replaceFirst(sender, "").replaceFirst(target, "")));
+            Bukkit.getPlayer(target).sendMessage(new TextComponent( "§6[" + "§b" + sender + "§6 -> §bja" + "§6]§7" + message.replaceFirst(" ", "") + message.replaceFirst(sender, "").replaceFirst(target, "")));
     }
     //todo: optional completer tylko na sektorach.
 
