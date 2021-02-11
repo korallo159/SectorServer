@@ -23,4 +23,4 @@ commands:
     description: msg toggle
     permission: sectorserver.msg
   remote:
-  itemshop:
+  sockettest:

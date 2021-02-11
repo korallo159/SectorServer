@@ -110,7 +110,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getCommand("msg").setExecutor(msg);
         getCommand("msgtoggle").setExecutor(msg);
         getCommand("remote").setExecutor(new PerformRemote());
-        getCommand("itemshop").setExecutor(new ItemShop());
+        getCommand("sockettest").setExecutor(new SocketTest());
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
             PluginChannelListener.playerCompleterList.clear();
             servers.forEach(serwer -> getPlayersFromServer(serwer));

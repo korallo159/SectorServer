@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SocketClient {
-    static Socket socket;
+    public static Socket socket;
     public static void connectToSocketServer() {
 
         new Thread(() -> {
@@ -28,13 +28,23 @@ public class SocketClient {
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                 BufferedReader bufferedReader = new BufferedReader(in);
                 out.writeUTF("start");
-                getConfiguration(bufferedReader.readLine());
-                while(true){
-                    received = bufferedReader.readLine(); //trzeba zrobic cos, zeby zatrzymac watek w oczekiwaniu na respond
-                    if(received.equals("exit")){
-                        socket.close();
-                        System.out.println("Serwer rozlaczyl klienta");
-                        break;
+                String config = bufferedReader.readLine();
+                getConfiguration(config);
+                out.writeUTF("id");
+                out.writeUTF(SectorServer.serverName);
+                boolean loop = true;
+                while(loop){
+                    received = bufferedReader.readLine();
+                    switch(received){
+                        case"SocketTestChannel":
+                            String data = bufferedReader.readLine();
+                            System.out.println("SocketTestChannel " + data);
+                            break;
+                        case"exit":
+                            socket.close();
+                            System.out.println("Serwer rozlaczyl klienta");
+                            loop = false;
+                            break;
                     }
                 }
                 bufferedReader.close();

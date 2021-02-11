@@ -56,7 +56,7 @@ public class Msg implements CommandExecutor, TabExecutor {
                     forwardMessageToPlayer((Player) sender, args[0], sb.toString());
                     String message = sb.toString().replaceFirst(args[0], "").replaceFirst(sender.getName(), "");
 
-                    sender.sendMessage("§6[" + "§b" + "Ty" + "§6 -> §b" + args[0] + "§6]§7" + message);
+                    sender.sendMessage("§6[" + "§b" + "Ty" + "§6 -> §b" + args[0] + "§6]§7" + message.replaceFirst(" ", ""));
                 }
                 else sender.sendMessage("§cTen gracz blokuje wysyłanie wiadomości");
             }
