@@ -16,6 +16,10 @@ import org.json.simple.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -117,6 +121,8 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
             spawns.forEach(spawn-> getPlayersFromServer(spawn));
         }, 0, 100);
         reloadPlugin();
+
+        registerForwardChannelListener(SocketTestListener.class);
 
     }
     @Override
@@ -282,6 +288,33 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         }
     }
 
+
+
+    public interface DataOutputStreamConsumer {
+        void accept(DataOutputStream out) throws IOException;
+    }
+    public static void registerForwardChannelListener(Class<? extends ForwardChannelListener> clazz) {
+        SocketClient.listeners.add(clazz);
+    }
+    public static void sendToServer(String subchannel, String server, DataOutputStreamConsumer outConsumer) {
+        try {
+            DataOutputStream out = new DataOutputStream(SocketClient.socket.getOutputStream());
+            out.writeUTF("forward");
+            out.writeUTF(server);
+            out.writeUTF(subchannel);
+
+            ByteArrayOutputStream b = new ByteArrayOutputStream();
+            DataOutputStream dataout = new DataOutputStream(b);
+
+            outConsumer.accept(dataout);
+
+            byte[] data = b.toByteArray();
+            out.writeShort(data.length);
+            out.write(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
 
 
