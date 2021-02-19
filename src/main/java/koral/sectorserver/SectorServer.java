@@ -16,13 +16,10 @@ import org.json.simple.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 //TODO zeby komenda z teleportowania do gildii, teleportowala do gildii
@@ -103,6 +100,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", pcl = new PluginChannelListener());
+        getServer().getPluginManager().registerEvents(new PlayerDeathListener(), this);
         getServer().getPluginManager().registerEvents(new AsyncPlayerChat(), this);
         getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
         getCommand("tp").setExecutor(new TeleportCommand());
@@ -123,6 +121,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         reloadPlugin();
 
         registerForwardChannelListener(SocketTestListener.class);
+        registerForwardChannelListener(SocketChannelListener.class);
 
     }
     @Override
@@ -168,16 +167,15 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         Function<Integer, Double> coord = x -> x * width + width / 2.0;
         Function<World, Location> getCenter = world -> new Location(world, coord.apply(n % count) + shiftX, 0, coord.apply(n / count) + shiftZ);
 
-        if(!SectorServer.getPlugin().getConfig().getBoolean("isOnlyForApi")) {
-            Bukkit.getWorlds().forEach(world -> {
-                WorldBorder border = world.getWorldBorder();
+        if(!SectorServer.getPlugin().getConfig().getBoolean("isOnlyForApi")) Bukkit.getWorlds().forEach(world -> {
+            WorldBorder border = world.getWorldBorder();
 
-                border.setCenter(getCenter.apply(world));
-                border.setSize(width + 2);
-                border.setWarningDistance(0);
-                border.setDamageBuffer(5);
-            });
-        }
+            border.setCenter(getCenter.apply(world));
+            border.setSize(width + 2);
+            border.setWarningDistance(0);
+            border.setDamageBuffer(5);
+            border.setDamageAmount(.2);
+        });
 
         Location center = getCenter.apply(Bukkit.getWorlds().get(0));
 
@@ -257,7 +255,12 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
             e.printStackTrace();
         }
 
-        sendPluginMessage(player, byteArrayOutputStream.toByteArray());
+        Bukkit.getScheduler().runTask(SectorServer.getPlugin(), () -> {
+            Bukkit.getPluginManager().callEvent(new PlayerChangeSectorEvent(player, serverName, server));
+
+            sendPluginMessage(player, byteArrayOutputStream.toByteArray());
+        });
+
     }
 
     public static void sendToBungeeCord(Player p, String subchannel, String message) {
@@ -288,6 +291,34 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         }
     }
 
+
+    // nick: server
+    private static Map<String, String> serversMap = new HashMap<>();
+    public static String getPlayerServer(String playerName) {
+        return serversMap.get(playerName.toLowerCase());
+    }
+    public static String setPlayerServer(String playerName, String server) {
+        return serversMap.put(playerName.toLowerCase(), server);
+    }
+    public static boolean removePlayerServerFromMap(String playerName, String server) {
+        return serversMap.remove(playerName.toLowerCase(), server);
+    }
+
+    public static boolean msg(Player p, String format, String... args) {
+        p.sendMessage(String.format(format, args));
+        return true;
+    }
+    public static boolean msg(String playerName, String format, String... args) {
+        String server = getPlayerServer(playerName);
+        if (server != null) {
+            SectorServer.sendToServer("msg", server, out -> {
+                out.writeUTF(playerName);
+                out.writeUTF(String.format(format, args));
+            });
+            return true;
+        }
+        return false;
+    }
 
 
     public interface DataOutputStreamConsumer {

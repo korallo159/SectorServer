@@ -41,15 +41,12 @@ public class PlayerMove implements Listener {
             });
 
         if (server != null) {
-            if(!e.getPlayer().getScoreboardTags().contains("mimiAntyLog")) {
-                if(!cooldown.hasCooldown(e.getPlayer(), 5)) {
-                    cooldown.setSystemTime(e.getPlayer());
+            if(!cooldown.hasCooldown(e.getPlayer(), 5)) {
+                cooldown.setSystemTime(e.getPlayer());
+                if(!e.getPlayer().getScoreboardTags().contains("mimiAntylog"))
                     Teleport.teleport(e.getPlayer(), e.getTo());
-                }
-            }
-            else {
-                e.getPlayer().sendMessage(ChatColor.RED + "Nie możesz zmieniać sektorów w trakcie walki");
-                e.getPlayer().setVelocity(e.getPlayer().getLocation().getDirection().multiply(-3));
+                else
+                    e.getPlayer().sendMessage(ChatColor.RED + "Nie możesz zmieniać sektorów w trakcie walki");
             }
         }
     }
@@ -86,8 +83,6 @@ public class PlayerMove implements Listener {
 
         p.setMetadata("sector_bossbars", new FixedMetadataValue(SectorServer.getPlugin(), bossbars));
     }
-
-//TODO zrobic lepsze dotykanie tej bariery
 
     boolean canPass(int s1, int s2) {
         int n = SectorServer.serversPerSide();

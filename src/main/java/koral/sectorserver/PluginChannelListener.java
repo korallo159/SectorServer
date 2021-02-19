@@ -17,8 +17,6 @@ import java.io.*;
 import java.util.*;
 
 import static koral.sectorserver.commands.Msg.msgMute;
-import static koral.sectorserver.commands.Tpa.tpaTimer;
-import static koral.sectorserver.listeners.PlayerJoin.randomSectorLoc;
 
 @SuppressWarnings("unused")
 public class PluginChannelListener implements PluginMessageListener {
@@ -101,24 +99,8 @@ public class PluginChannelListener implements PluginMessageListener {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        PlayerJoin.graczeDoTp.put(jsonObject.get("player").toString(), jsonObject.get("target").toString());
-    }
-
-    public static Set<String> rtpPlayers = new HashSet<>();
-    void RtpChannel(DataInputStream in) throws IOException{
-        short length = in.readShort();
-        byte[] data = new byte[length];
-        in.readFully(data);
-        String s = new String(data);
-        Player p = Bukkit.getPlayer(s);
-        if(p != null){
-            p.teleport(randomSectorLoc());
-            Bukkit.getScheduler().runTaskLater(SectorServer.getPlugin(), task ->{
-                p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 500, 1));
-            }, 20);
-        }
-        else
-            rtpPlayers.add(s);
+        //PlayerJoin.graczeDoTp.put(jsonObject.get("player").toString(), jsonObject.get("target").toString());
+        System.out.println("Użyto nieużywanego channelu TpChannel!");
     }
 
     void teleportChannel(DataInputStream in) throws IOException, ParseException {
@@ -135,22 +117,25 @@ public class PluginChannelListener implements PluginMessageListener {
         if (p != null)
             p.teleport(location);
         else
-            PlayerJoin.lokacjaGracza.put(playername, location);
+            PlayerJoin.lokacjaGracza.put(playername.toLowerCase(), location);
     }
     void teleportChannelP2P(DataInputStream in) throws IOException {
         String nick1 = in.readUTF();
         String nick2 = in.readUTF();
 
+        Player where = Bukkit.getPlayer(nick2);
+        if (where == null) {
+            System.out.println("Nie można odnaleźć " + nick2 + " gdyż gracz nie jest online! gracz " + nick1 + " nie zostanie poprawnie przeteleportowany");
+            return;
+        }
         Player who = Bukkit.getPlayer(nick1);
         if (who != null) {
-            Player where = Bukkit.getPlayer(nick2);
-            if (where != null) {
-                who.teleport(where);
-                return;
-            }
+            who.teleport(where);
+            return;
         }
 
-        PlayerJoin.graczeDoTp.put(nick1, nick2);
+        //PlayerJoin.graczeDoTp.put(nick1, nick2);
+        System.out.println("Użyto nieużywanego channelu teleportChannelP2P!");
     }
     void teleportChannelP2XYZ(DataInputStream in) throws IOException {
         Player p = Bukkit.getPlayer(in.readUTF());
@@ -163,13 +148,15 @@ public class PluginChannelListener implements PluginMessageListener {
     }
     public static HashMap<String, String> tpaMap = new HashMap<>();
     public static HashMap<String, String> tpaTeleport = new HashMap<>();
-    void TpaChannel(DataInputStream in, Player player) throws IOException, ParseException {
-            short length = in.readShort();
+    void TpaChannel(DataInputStream in, Player player) {
+        System.out.println("Nieobsługiwany channell TpaChannel!");
+            /*short length = in.readShort();
             byte[] data = new byte[length];
             in.readFully(data);
             String s = new String(data);
             JSONParser parser = new JSONParser();
             JSONObject jsonObject = (JSONObject) parser.parse(s);
+
             if (jsonObject.containsKey("accept")) {
                 boolean accept = (boolean) jsonObject.get("accept");
                 String server = (String) jsonObject.get("server");
@@ -188,6 +175,7 @@ public class PluginChannelListener implements PluginMessageListener {
                 tpaTeleport.put(tpaAccepter, tpaReceiver);
                 Bukkit.getScheduler().runTaskLater(SectorServer.getPlugin(), () -> tpaTeleport.remove(tpaAccepter), 100); // gdyby jakimś cudem gracza nie przeniosło od razu
             }
+
             String tpaSender = (String) jsonObject.get("player");
             String tpaReceiver = (String) jsonObject.get("target");
             if (Bukkit.getPlayer(tpaReceiver) != null) {
@@ -195,7 +183,7 @@ public class PluginChannelListener implements PluginMessageListener {
                 Bukkit.getScheduler().runTaskLater(SectorServer.getPlugin(), () -> tpaMap.remove(tpaReceiver), 20 * 25);
                 Bukkit.getPlayer(tpaReceiver).sendMessage("§2[§aTPA§2] " + "§cDostałeś prośbę o teleportację od gracza " + tpaSender +
                         " aby zaakceptować wpisz /tpaccept");
-            }
+            }*/
     }
     void MsgChannel(DataInputStream in) throws IOException {
         short length = in.readShort();
@@ -234,18 +222,6 @@ public class PluginChannelListener implements PluginMessageListener {
         Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), toperform2);
 
     }
-    void RemoteChannel(DataInputStream in) throws IOException{
-        short length = in.readShort();
-        byte[] data = new byte[length];
-        in.readFully(data);
-        String message = new String(data);
-        String[] msgSplit = message.split(" ");
-        String server = msgSplit[0];
-        String toPerform = message.replaceFirst(" ", "").replaceFirst(server, "");
-        Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), toPerform);
-    }
-
-
 
 /*
     void TpaChannel(DataInputStream in) throws IOException, ParseException{

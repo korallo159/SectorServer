@@ -1,17 +1,10 @@
 package koral.sectorserver.util;
 
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import koral.sectorserver.SectorServer;
 import koral.sectorserver.listeners.PlayerMove;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.json.simple.JSONObject;
-
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 
 public class Teleport {
     public static boolean teleport(Player p, Location loc) {
@@ -25,52 +18,29 @@ public class Teleport {
         if (server.equals(SectorServer.serverName))
             p.teleport(loc);
         else {
-            forwardCoorrdinates(server, p, loc);
+            forwardCoordinates(server, p, loc);
             SectorServer.connectAnotherServer(server, p);
         }
 
         return true;
     }
-    private static void forwardCoorrdinates(String target, Player player, Location loc) {
-        try {
-            ByteArrayOutputStream b = new ByteArrayOutputStream();
-            DataOutputStream out = new DataOutputStream(b);
-
-            out.writeUTF("Forward");
-            out.writeUTF(target);
-            out.writeUTF("teleportChannel"); // "customchannel" for example
-
-            JSONObject jsonObject = SectorServer.toJson(loc);
-            jsonObject.put("player", player.getName());
-
-            byte[] data = jsonObject.toJSONString().getBytes();
-            out.writeShort(data.length);
-            out.write(data);
-
-            SectorServer.sendPluginMessage(player, b.toByteArray());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+    private static void forwardCoordinates(String target, Player player, Location loc) {
+        SectorServer.sendToServer("teleportCoreP2Loc", target, out -> {
+            out.writeUTF(player.getName());
+            out.writeUTF(SectorServer.toJson(loc).toJSONString());
+        });
     }
 
     public static void teleport(CommandSender sender, String player1, String player2) {
-        Player p1 = Bukkit.getPlayer(player1);
-        Player p2 = Bukkit.getPlayer(player2);
-        if (p1 == null || p2 == null) {
-            ByteArrayDataOutput out = ByteStreams.newDataOutput();
-            out.writeUTF("tpCommand");
-            boolean isConsole = !(sender instanceof Player);
-            out.writeBoolean(isConsole);
-            out.writeUTF(isConsole ? SectorServer.serverName : sender.getName());
-            out.writeShort(2);
-
+        String s1 = SectorServer.getPlayerServer(player1); if (s1 == null) {sender.sendMessage("Niepoprawny gracz: " + player1); return; }
+        String s2 = SectorServer.getPlayerServer(player2); if (s2 == null) {sender.sendMessage("Niepoprawny gracz: " + player2); return; }
+        SectorServer.sendToServer("teleportCoreP2P", s1, out -> {
             out.writeUTF(player1);
             out.writeUTF(player2);
-
-            Bukkit.getServer().sendPluginMessage(SectorServer.plugin, "BungeeCord", out.toByteArray());
-        } else {
-            p1.teleport(p2);
-            sender.sendMessage("Przeteleportowano");
-        }
+            out.writeUTF(s2);
+            out.writeUTF(SectorServer.serverName);
+            out.writeBoolean(sender instanceof Player);
+            out.writeUTF(sender.getName());
+        });
     }
 }

@@ -25,7 +25,6 @@ public class TeleportCommand implements TabExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         Location loc = null;
         Player p = null;
-        Player p2;
         if (sender instanceof Player)
             p = (Player) sender;
 
@@ -41,17 +40,6 @@ public class TeleportCommand implements TabExecutor {
         };
 
         try {
-            ByteArrayDataOutput out = ByteStreams.newDataOutput();
-
-            out.writeUTF("tpCommand");
-
-            out.writeBoolean(p == null);
-            out.writeUTF(p == null ? SectorServer.serverName : sender.getName());
-            out.writeShort(args.length);
-
-            boolean wysyłać = false;
-
-
             switch (args.length) {
                 // /tp <player>
                 case 1:
@@ -71,26 +59,14 @@ public class TeleportCommand implements TabExecutor {
                     break;
                 // /tp <player> <x> <y> <z>
                 case 4:
-                    p = getPlayer.apply(args[0]);
-                    if (p == null) {
-                        wysyłać = true;
-                        out.writeUTF(args[0]);
-                        out.writeInt(Integer.parseInt(args[1]));
-                        out.writeInt(Integer.parseInt(args[2]));
-                        out.writeInt(Integer.parseInt(args[3]));
-                    } else
-                        loc = fromCoords.apply(p, 1);
+                    //TODO: usunięte, przywrócić
                     break;
                 default:
                     return false;
             }
 
-            if (wysyłać)
-                Bukkit.getServer().sendPluginMessage(SectorServer.plugin, "BungeeCord", out.toByteArray());
-            else {
-                Teleport.teleport(p, loc);
-                sender.sendMessage("Przeteleportowano");
-            }
+            Teleport.teleport(p, loc);
+            sender.sendMessage("Przeteleportowano");
 
         } catch (ClassCastException e) {
             sender.sendMessage("Niepoprawny gracz");

@@ -17,10 +17,12 @@ commands:
     description: tpa request
     permission: sectorserver.tpa
   msg:
+    usage: /msg <nick> <wiadomosc>
     description: msg
     permission: sectorserver.msg
   msgtoggle:
     description: msg toggle
     permission: sectorserver.msg
   remote:
+    permission: sectorserver.remote
   sockettest:

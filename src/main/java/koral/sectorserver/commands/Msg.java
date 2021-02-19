@@ -29,11 +29,13 @@ public class Msg implements CommandExecutor, TabExecutor {
     Cooldowns cooldown = new Cooldowns(new HashMap<>());
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (args.length < 2)
+            return false;
+
         if(!(sender instanceof Player)) return false;
-//TODO: Pobrac liste graczy z calej sieci do tab completerow.
 //TODO: przesylac blokady na kazdy serwer.
 //TODO: komenda /ignore
-        if(!cooldown.hasCooldown((Player) sender, 5, "§cMusisz jeszcze chwilę odczeskać aby ponownie wyśłać wiadomość.")) {
+        if(!cooldown.hasCooldown((Player) sender, 2, "§cMusisz jeszcze chwilę odczeskać aby ponownie wyśłać wiadomość.")) {
             if (command.getName().equalsIgnoreCase("msgtoggle")) {
                 if (msgMute.contains(sender.getName())) {
                     msgMute.remove(sender.getName());
