@@ -1,6 +1,5 @@
 package koral.sectorserver;
 
-import org.bukkit.Bukkit;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -11,6 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.ConnectException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,63 +19,84 @@ public class SocketClient {
 
     static final List<Class<? extends ForwardChannelListener>> listeners = new ArrayList<>();
 
+    private static boolean first;
     public static void connectToSocketServer() {
-
         new Thread(() -> {
             try {
-                String received;
-                socket = new Socket(SectorServer.getPlugin().getConfig().getString("ipsocket"),SectorServer.getPlugin().getConfig().getInt("socketport"));
-
-                InputStreamReader in = new InputStreamReader(socket.getInputStream());
-                DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-                DataInputStream datain = new DataInputStream(socket.getInputStream());
-                BufferedReader bufferedReader = new BufferedReader(in);
-
-                out.writeUTF("start");
-                String config = bufferedReader.readLine();
-                getConfiguration(config);
-
-                out.writeUTF("id");
-                out.writeUTF(SectorServer.serverName);
-
-                boolean loop = true;
-                while(loop) {
-                    received = datain.readUTF();
-                    switch(received) {
-                        case "exit":
-                            socket.close();
-                            System.out.println("Serwer rozlaczyl klienta");
-                            loop = false;
-                            break;
-                        default: // forward
-                            int len = datain.readShort();
-                            byte[] data = new byte[len];
-                            datain.readFully(data);
-
-                            for (Class<? extends ForwardChannelListener> clazz : listeners) {
-                                try {
-                                    Method met = clazz.getDeclaredMethod(received, DataInputStream.class);
-                                    met.setAccessible(true);
-                                    met.invoke(null, new DataInputStream(new ByteArrayInputStream(data)));
-                                } catch (NoSuchMethodException e) {
-                                } catch (IllegalAccessException | InvocationTargetException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                            break;
-                    }
-                }
-                in.close();
-                out.close();
-                datain.close();
-                bufferedReader.close();
-            } catch (ConnectException e2) {
-                System.out.println("Brak łączności z SocketServerem");
-                Bukkit.getScheduler().runTaskLater(SectorServer.plugin, SocketClient::connectToSocketServer, 200);
-            } catch (IOException e) {
+                first = true;
+                connect();
+            } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
         }).start();
+    }
+
+    private static void connect() throws IOException, InterruptedException {
+        try {
+            socket = new Socket(SectorServer.getPlugin().getConfig().getString("ipsocket"),SectorServer.getPlugin().getConfig().getInt("socketport"));
+
+            System.out.println("Nawiązano łączność z socketem");
+
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            if (first) {
+                first = false;
+                out.writeUTF("start");
+                InputStreamReader in = new InputStreamReader(socket.getInputStream());
+                BufferedReader bufferedReader = new BufferedReader(in);
+                String config = bufferedReader.readLine();
+                getConfiguration(config);
+            }
+
+            out.writeUTF("id");
+            out.writeUTF(SectorServer.serverName);
+
+            runMainLoop();
+            return;
+        } catch (ConnectException e2) {
+            System.out.println("Brak łączności socketów");
+        } catch (Throwable e) {
+            System.out.println("Błąd z socketami!");
+            e.printStackTrace();
+        }
+        Thread.sleep(1000L);
+        connect();
+    }
+
+    private static void runMainLoop() throws IOException, InterruptedException {
+        try {
+            mainloop(new DataInputStream(socket.getInputStream()));
+        } catch (SocketException e) {
+            connect();
+        }
+    }
+    private static void mainloop(DataInputStream datain) throws IOException {
+        boolean loop = true;
+        while(loop) {
+            String received = datain.readUTF();
+            switch(received) {
+                case "exit":
+                    socket.close();
+                    System.out.println("Serwer rozlaczyl klienta");
+                    loop = false;
+                    break;
+                default: // forward
+                    int len = datain.readShort();
+                    byte[] data = new byte[len];
+                    datain.readFully(data);
+
+                    for (Class<? extends ForwardChannelListener> clazz : listeners) {
+                        try {
+                            Method met = clazz.getDeclaredMethod(received, DataInputStream.class);
+                            met.setAccessible(true);
+                            met.invoke(null, new DataInputStream(new ByteArrayInputStream(data)));
+                        } catch (NoSuchMethodException e) {
+                        } catch (IllegalAccessException | InvocationTargetException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    break;
+            }
+        }
 
     }
 

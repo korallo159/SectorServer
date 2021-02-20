@@ -22,7 +22,6 @@ public class PlayerCommandPreprocess implements Listener {
         double distance = Math.max(calcDistance.apply(Location::getX), calcDistance.apply(Location::getZ));
 
         if (distance > SectorServer.width / 2d - SectorServer.blockedCmdsDistance) {
-            System.out.println(SectorServer.blockedCmds);
             if(SectorServer.blockedCmds.contains(ev.getMessage().replace("/", ""))) {
                 ev.getPlayer().sendMessage(ChatColor.RED + "nie możesz używac tej komendy przy sektorze!");
                 ev.setCancelled(true);

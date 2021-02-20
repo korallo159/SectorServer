@@ -13,6 +13,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Locale;
 
@@ -28,6 +30,18 @@ public class SocketChannelListener implements ForwardChannelListener {
         String cmd = in.readUTF();
 
         Bukkit.getScheduler().runTask(SectorServer.plugin, () -> Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), cmd));
+    }
+    static void remoteCommandFile(DataInputStream in) throws IOException {
+        String path = in.readUTF();
+        int len = in.readShort();
+        byte[] data = new byte[len];
+        in.readFully(data);
+
+        File file = new File(path);
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            fos.write(data);
+        }
+
     }
 
     static void msg(DataInputStream in) throws IOException {

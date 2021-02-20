@@ -24,6 +24,8 @@ public class PlayerJoin implements Listener {
     private Location locToTp; // dummy
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
+        event.getPlayer().removeScoreboardTag("isConnectingAnotherServer");
+
         Bukkit.getScheduler().runTask(SectorServer.plugin, () -> {
             Player player = event.getPlayer();
             locToTp = null;

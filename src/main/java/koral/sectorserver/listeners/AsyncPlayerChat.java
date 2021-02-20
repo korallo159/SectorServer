@@ -8,7 +8,8 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 public class AsyncPlayerChat implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onAsyncChat(AsyncPlayerChatEvent event){
+    public void onAsyncChat(AsyncPlayerChatEvent event) {
+        if (event.isCancelled()) return;
         String msg = String.format(event.getFormat(), event.getPlayer().getDisplayName(), event.getMessage());
         SectorServer.servers.forEach(server -> sendMessageAnotherServer(server, msg));
         SectorServer.spawns.forEach(spawn   -> sendMessageAnotherServer(spawn, msg));

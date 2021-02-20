@@ -18,8 +18,8 @@ public class PlayerRespawn implements Listener {
 
     public static Map<String, Integer> spawnMap = new HashMap<>();
     @EventHandler
-    public void onPlayerRespawn(PlayerRespawnEvent event){
-    SectorServer.connectAnotherServer(getLessLoadedSpawn(event.getPlayer()), event.getPlayer());
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
+        SectorServer.connectAnotherServer(getLessLoadedSpawn(event.getPlayer()), event.getPlayer());
     }
     private void askForPlayers(String server, Player player) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

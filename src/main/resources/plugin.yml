@@ -25,4 +25,6 @@ commands:
     permission: sectorserver.msg
   remote:
     permission: sectorserver.remote
+  remotefile:
+    permission: sectorserver.remotefile
   sockettest:

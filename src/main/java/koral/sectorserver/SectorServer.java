@@ -78,9 +78,9 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     public static int width; // szerokość pojedyńczego serwera
     public static int protectedBlocks;
     public static int bossbarDistance;
-    public static int blockedCmdsDistance = protectedBlocks;
+    public static int blockedCmdsDistance = 100;
 
-        public static SectorServer getPlugin() {
+    public static SectorServer getPlugin() {
             return plugin;
         }
     @Override
@@ -102,6 +102,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", pcl = new PluginChannelListener());
         getServer().getPluginManager().registerEvents(new PlayerDeathListener(), this);
         getServer().getPluginManager().registerEvents(new AsyncPlayerChat(), this);
+        getServer().getPluginManager().registerEvents(new koral.sectorserver.listeners.PlayerDropItem(), this);
         getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
         getCommand("tp").setExecutor(new TeleportCommand());
         Tpa tpa = new Tpa();
@@ -112,6 +113,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getCommand("msg").setExecutor(msg);
         getCommand("msgtoggle").setExecutor(msg);
         getCommand("remote").setExecutor(new PerformRemote());
+        getCommand("remotefile").setExecutor(new PerformRemoteFile());
         getCommand("sockettest").setExecutor(new SocketTest());
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
             PluginChannelListener.playerCompleterList.clear();
@@ -257,8 +259,10 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
 
         Bukkit.getScheduler().runTask(SectorServer.getPlugin(), () -> {
             Bukkit.getPluginManager().callEvent(new PlayerChangeSectorEvent(player, serverName, server));
+            player.addScoreboardTag("isConnectingAnotherServer");
 
             sendPluginMessage(player, byteArrayOutputStream.toByteArray());
+            Bukkit.getScheduler().runTaskLater(SectorServer.getPlugin(), () -> player.removeScoreboardTag("isConnectingAnotherServer"), 30);
         });
 
     }
