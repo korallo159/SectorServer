@@ -97,6 +97,7 @@ public class SocketClient {
                             met.setAccessible(true);
                             met.invoke(null, new DataInputStream(new ByteArrayInputStream(data)));
                         } catch (NoSuchMethodException e) {
+
                         } catch (IllegalAccessException | InvocationTargetException e) {
                             e.printStackTrace();
                         }

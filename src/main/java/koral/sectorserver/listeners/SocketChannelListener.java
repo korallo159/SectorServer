@@ -28,6 +28,16 @@ public class SocketChannelListener implements ForwardChannelListener {
         Bukkit.broadcastMessage(in.readUTF());
     }
 
+    static void helpop(DataInputStream in) throws IOException {
+        String playerName = in.readUTF();
+        String message = in.readUTF();
+        Bukkit.getOnlinePlayers().forEach(p -> {
+            if(p.hasPermission("guildsaddons.helpop.receive")){
+                p.sendMessage("§4§lHELPOP§7 " + playerName + " §4§l-> " + message);
+            }
+        });
+    }
+
     static void remoteCommand(DataInputStream in) throws IOException {
         String cmd = in.readUTF();
 

@@ -13,6 +13,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +89,15 @@ public class Tpa implements CommandExecutor, TabExecutor {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        return PluginChannelListener.playerCompleterList;
+         List<String> match = new ArrayList<>();
+        if(args.length == 1){
+            String search = args[0].toLowerCase();
+            for(String player : PluginChannelListener.playerCompleterList){
+                if(player.toLowerCase().startsWith(search)){
+                    match.add(player);
+                }
+            }
+        }
+        return match;
     }
 }

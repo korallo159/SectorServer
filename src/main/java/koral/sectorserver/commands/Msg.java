@@ -113,8 +113,15 @@ public class Msg implements CommandExecutor, TabExecutor {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-
-            return PluginChannelListener.playerCompleterList;
-
+            List<String> match = new ArrayList<>();
+            if(args.length == 1){
+                String search = args[0].toLowerCase();
+                for(String player : PluginChannelListener.playerCompleterList){
+                    if(player.toLowerCase().startsWith(search)){
+                        match.add(player);
+                    }
+                }
+            }
+            return match;
     }
 }

@@ -12,6 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -19,7 +20,16 @@ import java.util.function.Function;
 public class TeleportCommand implements TabExecutor {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return PluginChannelListener.playerCompleterList;
+        List<String> match = new ArrayList<>();
+        if(args.length == 1){
+            String search = args[0].toLowerCase();
+            for(String player : PluginChannelListener.playerCompleterList){
+                if(player.toLowerCase().startsWith(search)){
+                    match.add(player);
+                }
+            }
+        }
+        return match;
     }
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {

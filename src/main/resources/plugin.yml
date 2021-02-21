@@ -28,4 +28,7 @@ commands:
     permission: sectorserver.remote
   remotefile:
     permission: sectorserver.remotefile
+  helpop:
+    permission: sectorserver.helpop
   sockettest:
+    permission: sectorserver.testsockets
