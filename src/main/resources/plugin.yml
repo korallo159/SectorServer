@@ -30,5 +30,6 @@ commands:
     permission: sectorserver.remotefile
   helpop:
     permission: sectorserver.helpop
+    usage: /helpop <wiadomosc>
   sockettest:
     permission: sectorserver.testsockets

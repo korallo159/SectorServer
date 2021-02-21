@@ -11,6 +11,7 @@ import java.util.List;
 public class helpop implements TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if(args.length == 0 ) return false;
         SectorServer.sendToServer("helpop", "ALL", out ->{
             StringBuilder sb = new StringBuilder();
             for(int i = 0; i< args.length; i++){
@@ -18,6 +19,7 @@ public class helpop implements TabExecutor {
             }
             out.writeUTF(sender.getName());
             out.writeUTF(sb.toString());
+            sender.sendMessage("§4§lHELPOP§7 " + sender.getName() + " §4§l-> " + sb.toString());
         });
         return false;
     }
