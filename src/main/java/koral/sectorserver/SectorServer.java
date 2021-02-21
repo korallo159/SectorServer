@@ -3,11 +3,9 @@ package koral.sectorserver;
 import com.google.common.collect.Iterables;
 import koral.sectorserver.commands.*;
 import koral.sectorserver.listeners.*;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.WorldBorder;
+import org.bukkit.*;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -60,7 +58,6 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
             return list;
         }
     }
-
 
     public static SectorServer plugin;
     public static PluginChannelListener pcl;
@@ -204,10 +201,12 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
                     OtherServer.s_n = new OtherServer(server, null, center.getBlockZ() - width / 2 - 1, false)); // -z
     }
 
+
     public static <T> void doForNonNull(T obj, Consumer<T> cons) {
             if (obj != null)
                 cons.accept(obj);
     }
+
 
     public static String getServer(int s) {
         if (s < 0 || s >= servers.size())
@@ -262,6 +261,10 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
             player.addScoreboardTag("isConnectingAnotherServer");
 
             sendPluginMessage(player, byteArrayOutputStream.toByteArray());
+            // join na s2
+            // quit from there
+            // umiera z mimi
+            // player death
             Bukkit.getScheduler().runTaskLater(SectorServer.getPlugin(), () -> player.removeScoreboardTag("isConnectingAnotherServer"), 30);
         });
 
@@ -296,20 +299,29 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     }
 
 
+
     // nick: server
-    private static Map<String, String> serversMap = new HashMap<>();
+    private static Map<String, PlayerData> playerDataMap = new HashMap<>();
     public static String getPlayerServer(String playerName) {
-        return serversMap.get(playerName.toLowerCase());
+        PlayerData data = getPlayerData(playerName);
+        return data == null ? null : data.server;
     }
-    public static String setPlayerServer(String playerName, String server) {
-        return serversMap.put(playerName.toLowerCase(), server);
+    public static String getExactPlayerName(String playerName) {
+        PlayerData data = getPlayerData(playerName);
+        return data == null ? null : data.nick;
     }
-    public static boolean removePlayerServerFromMap(String playerName, String server) {
-        return serversMap.remove(playerName.toLowerCase(), server);
+    public static PlayerData getPlayerData(String playerName) {
+        return playerDataMap.get(playerName.toLowerCase());
+    }
+    public static PlayerData setPlayerData(String playerName, PlayerData data) {
+        return playerDataMap.put(playerName.toLowerCase(), data);
+    }
+    public static boolean removePlayerData(String playerName, PlayerData data) {
+        return playerDataMap.remove(playerName.toLowerCase(), data);
     }
 
-    public static boolean msg(Player p, String format, String... args) {
-        p.sendMessage(String.format(format, args));
+    public static boolean msg(CommandSender p, String format, String... args) {
+        p.sendMessage(ChatColor.translateAlternateColorCodes('&', String.format(format, args)));
         return true;
     }
     public static boolean msg(String playerName, String format, String... args) {
@@ -317,7 +329,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         if (server != null) {
             SectorServer.sendToServer("msg", server, out -> {
                 out.writeUTF(playerName);
-                out.writeUTF(String.format(format, args));
+                out.writeUTF(ChatColor.translateAlternateColorCodes('&', String.format(format, args)));
             });
             return true;
         }

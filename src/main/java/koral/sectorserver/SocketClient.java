@@ -53,7 +53,7 @@ public class SocketClient {
             runMainLoop();
             return;
         } catch (ConnectException e2) {
-            System.out.println("Brak łączności socketów");
+            SectorServer.getPlugin().getLogger().warning("Brak łączności socketów");
         } catch (Throwable e) {
             System.out.println("Błąd z socketami!");
             e.printStackTrace();
@@ -72,7 +72,14 @@ public class SocketClient {
     private static void mainloop(DataInputStream datain) throws IOException {
         boolean loop = true;
         while(loop) {
-            String received = datain.readUTF();
+            String received;
+            try {
+                received = datain.readUTF();
+            } catch (UTFDataFormatException e) {
+                System.out.println("Problem z UTF!");
+                continue;
+            }
+
             switch(received) {
                 case "exit":
                     socket.close();

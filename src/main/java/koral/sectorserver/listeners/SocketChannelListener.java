@@ -1,7 +1,9 @@
 package koral.sectorserver.listeners;
 
 import koral.sectorserver.ForwardChannelListener;
+import koral.sectorserver.PlayerData;
 import koral.sectorserver.SectorServer;
+import koral.sectorserver.commands.Msg;
 import koral.sectorserver.commands.Tpa;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -55,6 +57,14 @@ public class SocketChannelListener implements ForwardChannelListener {
         System.out.println(in.readUTF());
     }
 
+
+    // msgR
+    static void msgUpdateRMap(DataInputStream in) throws IOException {
+        String sender = in.readUTF();
+        String receiver = in.readUTF();
+
+        Msg.rMap.put(sender, receiver);
+    }
 
     // Teleport core
     static void teleportCoreP2Loc(DataInputStream in) throws IOException, ParseException {
@@ -166,13 +176,13 @@ public class SocketChannelListener implements ForwardChannelListener {
         String playerName = in.readUTF();
         String server = in.readUTF();
 
-        SectorServer.setPlayerServer(playerName, server);
+        SectorServer.setPlayerData(playerName, new PlayerData(playerName, server));
     }
     static void playerQuitEvent(DataInputStream in) throws IOException {
         String playerName = in.readUTF();
         String server = in.readUTF();
 
-        SectorServer.removePlayerServerFromMap(playerName, server);
+        SectorServer.removePlayerData(playerName, new PlayerData(playerName, server));
     }
 
 }

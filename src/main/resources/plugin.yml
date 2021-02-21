@@ -17,6 +17,7 @@ commands:
     description: tpa request
     permission: sectorserver.tpa
   msg:
+    aliases: [tell, r]
     usage: /msg <nick> <wiadomosc>
     description: msg
     permission: sectorserver.msg
