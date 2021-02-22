@@ -38,6 +38,17 @@ public class SocketChannelListener implements ForwardChannelListener {
         });
     }
 
+    static void spartan(DataInputStream in) throws IOException{
+        String sektor = in.readUTF();
+        if(sektor.equals(SectorServer.getPlugin().getConfig().getString("name"))) return;
+        String notification = in.readUTF();
+        Bukkit.getOnlinePlayers().forEach(p -> {
+            if(p.hasPermission("spartan.notifications")){
+                p.sendMessage(notification);
+            }
+        });
+    }
+
     static void remoteCommand(DataInputStream in) throws IOException {
         String cmd = in.readUTF();
 

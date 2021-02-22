@@ -101,6 +101,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         getServer().getPluginManager().registerEvents(new AsyncPlayerChat(), this);
         getServer().getPluginManager().registerEvents(new koral.sectorserver.listeners.PlayerDropItem(), this);
         getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
+        getServer().getPluginManager().registerEvents(new PlayerViolation(), this);
         getCommand("tp").setExecutor(new TeleportCommand());
         Tpa tpa = new Tpa();
         Msg msg = new Msg();

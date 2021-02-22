@@ -3,6 +3,7 @@ package koral.sectorserver.commands;
 import koral.sectorserver.PluginChannelListener;
 import koral.sectorserver.SectorServer;
 import koral.sectorserver.util.Cooldowns;
+import me.vagdedes.spartan.api.API;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

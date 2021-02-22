@@ -77,12 +77,10 @@ public class SocketClient {
             try {
                 received = datain.readUTF();
             } catch (UTFDataFormatException e) {
-
                 System.out.println("Problem z UTF!");
                 e.printStackTrace();
-                socket.close();
-                connect();
-                break;
+                continue;
+
             }
 
             switch(received) {
