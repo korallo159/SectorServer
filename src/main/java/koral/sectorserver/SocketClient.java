@@ -34,6 +34,8 @@ public class SocketClient {
     private static void connect() throws IOException, InterruptedException {
         try {
             socket = new Socket(SectorServer.getPlugin().getConfig().getString("ipsocket"),SectorServer.getPlugin().getConfig().getInt("socketport"));
+            socket.setKeepAlive(true);
+
 
             System.out.println("Nawiązano łączność z socketem");
 
@@ -46,10 +48,8 @@ public class SocketClient {
                 String config = bufferedReader.readLine();
                 getConfiguration(config);
             }
-
             out.writeUTF("id");
             out.writeUTF(SectorServer.serverName);
-
             runMainLoop();
             return;
         } catch (ConnectException e2) {
@@ -69,15 +69,20 @@ public class SocketClient {
             connect();
         }
     }
-    private static void mainloop(DataInputStream datain) throws IOException {
+    private static void mainloop(DataInputStream datain) throws IOException, InterruptedException {
         boolean loop = true;
         while(loop) {
             String received;
+
             try {
                 received = datain.readUTF();
             } catch (UTFDataFormatException e) {
+
                 System.out.println("Problem z UTF!");
-                continue;
+                e.printStackTrace();
+                socket.close();
+                connect();
+                break;
             }
 
             switch(received) {
