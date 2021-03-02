@@ -3,6 +3,7 @@ package koral.sectorserver;
 import com.google.common.collect.Iterables;
 import koral.sectorserver.commands.*;
 import koral.sectorserver.listeners.*;
+import koral.sectorserver.util.SectorScheduler;
 import org.bukkit.*;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -14,10 +15,8 @@ import org.json.simple.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 import java.util.function.Function;
 //TODO zeby komenda z teleportowania do gildii, teleportowala do gildii
@@ -247,10 +246,10 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     }
 
 
+
     public static void connectAnotherServer(String server, Player player) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DataOutputStream out = new DataOutputStream(byteArrayOutputStream);
-
         try {
             out.writeUTF("Connect");
             out.writeUTF(server);
@@ -258,16 +257,17 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
             e.printStackTrace();
         }
 
-        Bukkit.getScheduler().runTask(SectorServer.getPlugin(), () -> {
-            Bukkit.getPluginManager().callEvent(new PlayerChangeSectorEvent(player, serverName, server));
-            player.addScoreboardTag("isConnectingAnotherServer");
 
-            sendPluginMessage(player, byteArrayOutputStream.toByteArray());
-            // join na s2
-            // quit from there
-            // umiera z mimi
-            // player death
-            Bukkit.getScheduler().runTaskLater(SectorServer.getPlugin(), () -> player.removeScoreboardTag("isConnectingAnotherServer"), 30);
+        Bukkit.getScheduler().runTask(SectorServer.getPlugin(), () -> {
+            player.closeInventory();
+            SectorScheduler.addTaskToQueue("prePlayerChangeSectorEvent", () ->
+                Bukkit.getScheduler().runTask(SectorServer.getPlugin(), () -> {
+                    Bukkit.getPluginManager().callEvent(new PlayerChangeSectorEvent(player, serverName, server));
+                    player.addScoreboardTag("isConnectingAnotherServer");
+
+                    sendPluginMessage(player, byteArrayOutputStream.toByteArray());
+                    Bukkit.getScheduler().runTaskLater(SectorServer.getPlugin(), () -> player.removeScoreboardTag("isConnectingAnotherServer"), 30);
+                }));
         });
 
     }

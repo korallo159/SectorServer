@@ -12,6 +12,7 @@ public class PlayerChangeSectorEvent extends PlayerEvent {
         super(who);
         this.from = from;
         this.where = where;
+
     }
 
     private static final HandlerList handlers = new HandlerList();
