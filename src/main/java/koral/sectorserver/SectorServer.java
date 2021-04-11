@@ -64,7 +64,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     public static double shiftX;
     public static double shiftZ;
     public static Location shiftLocation(Location loc) {
-        return loc.add(shiftX, 0, shiftZ);
+        return loc.add(-shiftX, 0, -shiftZ);
     }
 
     public static String serverName;

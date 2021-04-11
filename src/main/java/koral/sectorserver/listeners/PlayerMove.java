@@ -103,6 +103,7 @@ public class PlayerMove implements Listener {
      * @return index servera jeśli lokacja należy do jednego z serwerów w innym przypadku -1
      */
     public static int locToServer(Location loc) {
+        loc = loc.clone();
         loc = SectorServer.shiftLocation(loc);
         if (loc.getX() > SectorServer.width * SectorServer.serversPerSide() || loc.getX() < 0)
             return -1;
