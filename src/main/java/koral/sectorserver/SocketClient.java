@@ -84,7 +84,6 @@ public class SocketClient {
                 socket.close();
                 connect();
                 break;
-
             }
 
             switch(received) {

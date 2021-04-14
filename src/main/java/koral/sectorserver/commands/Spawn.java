@@ -16,15 +16,22 @@ public class Spawn implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(sender instanceof Player) {
+
+            if(sender.hasPermission("sectorserver.bypass")){
+                SectorServer.connectAnotherServer(playerRespawn.getLessLoadedSpawn((Player) sender), (Player) sender);
+                return true;
+            }
+
             Player player = (Player) sender;
             player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 11*20, 0, false, false, false));
             player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 11*20, 2, false, false, false));
-        spawnTimer(player, player.getLocation(), 10);
+            spawnTimer(player, player.getLocation(), 10);
         }
         return true;
     }
 
     private void spawnTimer(Player sender, Location lastLocation, int secondsLeft) {
+
         if (sender.getLocation().distance(lastLocation) > 1) {
             sender.sendMessage("§cPoruszyłeś się! Teleportacja anulowana.");
             sender.removePotionEffect(PotionEffectType.CONFUSION);

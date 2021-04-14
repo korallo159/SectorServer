@@ -223,6 +223,11 @@ public class PluginChannelListener implements PluginMessageListener {
 
     }
 
+    void IP(DataInputStream in) throws IOException{
+        String ip = in.readUTF();
+        int port = in.readInt();
+    }
+
 /*
     void TpaChannel(DataInputStream in) throws IOException, ParseException{
         short length = in.readShort();
