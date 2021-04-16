@@ -66,9 +66,8 @@ public class Msg implements CommandExecutor, TabExecutor {
                 if (!msgMute.contains(args[0])) {
                     StringBuilder sb = new StringBuilder();
                     sb.append(sender.getName()).append(" ");
-                    for (int i = 0; i < args.length; i++) {
+                    for (int i = 0; i < args.length; i++)
                         sb.append(args[i]).append(" ");
-                    }
                     forwardMessageToPlayer((Player) sender, args[0], sb.toString());
                     String message = sb.toString().replaceFirst(args[0], "").replaceFirst(sender.getName(), "");
 

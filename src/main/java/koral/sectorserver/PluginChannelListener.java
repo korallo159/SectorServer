@@ -1,4 +1,5 @@
 package koral.sectorserver;
+import koral.sectorserver.commands.Msg;
 import koral.sectorserver.listeners.PlayerJoin;
 import koral.sectorserver.listeners.PlayerRespawn;
 import koral.sectorserver.util.Teleport;
@@ -191,10 +192,16 @@ public class PluginChannelListener implements PluginMessageListener {
         in.readFully(data);
         String message = new String(data);
         String[] msgSplit = message.split(" ");
-       String sender = msgSplit[0];
-       String target = msgSplit[1];
-        if(Bukkit.getPlayer(target) != null && !msgMute.contains(target))
+        String sender = msgSplit[0];
+        String target = msgSplit[1];
+        if(Bukkit.getPlayer(target) != null && !msgMute.contains(target)) {
             Bukkit.getPlayer(target).sendMessage(new TextComponent( "§6[" + "§b" + sender + "§6 -> §bja" + "§6]§7"  + message.replaceFirst(sender, "").replaceFirst(target, "").replaceFirst(" ", "")));
+
+            String rTarget = Msg.rMap.get(target);
+            if (rTarget == null || SectorServer.getPlayerServer(rTarget) == null) {
+                Msg.rMap.put(target, sender);
+            }
+        }
     }
     //todo: optional completer tylko na sektorach.
 
