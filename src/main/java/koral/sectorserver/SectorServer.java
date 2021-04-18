@@ -17,6 +17,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 //TODO zeby komenda z teleportowania do gildii, teleportowala do gildii
@@ -123,6 +124,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         registerForwardChannelListener(SocketTestListener.class);
         registerForwardChannelListener(SocketChannelListener.class);
 
+
     }
     @Override
     public void onDisable() {
@@ -145,6 +147,7 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
         SectorServer.blockedCmds = blockedCmds;
         SectorServer.bossbarDistance = bossbarDistance;
         serverName = getPlugin().getConfig().getString("name"); //musi zostać, musi być w configu
+
         boolean isWeatherForwader = getPlugin().getConfig().getBoolean("weatherForwarder");
         if(isWeatherForwader)
             WeatherSync.runWeatherSync();

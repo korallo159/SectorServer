@@ -77,6 +77,8 @@ public class SocketClient {
             String received;
 
             try {
+                if (datain.available() <= 0)
+                        break;
                 received = datain.readUTF();
             } catch (UTFDataFormatException e) {
                 System.out.println("Problem z UTF!");
@@ -86,29 +88,34 @@ public class SocketClient {
                 break;
             }
 
-            switch(received) {
-                case "exit":
-                    socket.close();
-                    System.out.println("Serwer rozlaczyl klienta");
-                    loop = false;
-                    break;
-                default: // forward
-                    int len = datain.readShort();
-                    byte[] data = new byte[len];
-                    datain.readFully(data);
+            try {
+                switch(received) {
+                    case "exit":
+                        socket.close();
+                        System.out.println("Serwer rozlaczyl klienta");
+                        loop = false;
+                        break;
+                    default: // forward
+                        int len = datain.readShort();
+                        byte[] data = new byte[len];
+                        datain.readFully(data);
 
-                    for (Class<? extends ForwardChannelListener> clazz : listeners) {
-                        try {
-                            Method met = clazz.getDeclaredMethod(received, DataInputStream.class);
-                            met.setAccessible(true);
-                            met.invoke(null, new DataInputStream(new ByteArrayInputStream(data)));
-                        } catch (NoSuchMethodException e) {
+                        for (Class<? extends ForwardChannelListener> clazz : listeners) {
+                            try {
+                                Method met = clazz.getDeclaredMethod(received, DataInputStream.class);
+                                met.setAccessible(true);
+                                met.invoke(null, new DataInputStream(new ByteArrayInputStream(data)));
+                            } catch (NoSuchMethodException e) {
 
-                        } catch (IllegalAccessException | InvocationTargetException e) {
-                            e.printStackTrace();
+                            } catch (IllegalAccessException | InvocationTargetException e) {
+                                e.printStackTrace();
+                            }
                         }
-                    }
-                    break;
+                        break;
+                }
+            } catch (Throwable e) {
+                System.out.println("Problem z odbieraniem " + e.getClass().getSimpleName());
+                e.printStackTrace();
             }
         }
 
