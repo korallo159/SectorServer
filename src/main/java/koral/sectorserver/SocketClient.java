@@ -13,9 +13,10 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class SocketClient {
-    public static Socket socket;
+    static Socket socket;
 
     static final List<Class<? extends ForwardChannelListener>> listeners = new ArrayList<>();
 
@@ -35,7 +36,6 @@ public class SocketClient {
         try {
             socket = new Socket(SectorServer.getPlugin().getConfig().getString("ipsocket"),SectorServer.getPlugin().getConfig().getInt("socketport"));
             socket.setKeepAlive(true);
-
 
             System.out.println("Nawiązano łączność z socketem");
 
@@ -77,8 +77,6 @@ public class SocketClient {
             String received;
 
             try {
-                if (datain.available() <= 0)
-                        break;
                 received = datain.readUTF();
             } catch (UTFDataFormatException e) {
                 System.out.println("Problem z UTF!");
@@ -88,37 +86,38 @@ public class SocketClient {
                 break;
             }
 
-            try {
-                switch(received) {
-                    case "exit":
-                        socket.close();
-                        System.out.println("Serwer rozlaczyl klienta");
-                        loop = false;
-                        break;
-                    default: // forward
-                        int len = datain.readShort();
-                        byte[] data = new byte[len];
-                        datain.readFully(data);
+            switch(received) {
+                case "exit":
+                    socket.close();
+                    System.out.println("Serwer rozlaczyl klienta");
+                    loop = false;
+                    break;
+                default: // forward
+                    int len = datain.readShort();
+                    byte[] data = new byte[len];
+                    datain.readFully(data);
 
-                        for (Class<? extends ForwardChannelListener> clazz : listeners) {
+                    for (int i = 0; i < listeners.size(); i++) {
+                        Class<? extends ForwardChannelListener> clazz = listeners.get(i);
+                        try {
+                            Method met = clazz.getDeclaredMethod(received, DataInputStream.class);
+                            met.setAccessible(true);
+                            met.invoke(null, new DataInputStream(new ByteArrayInputStream(data)));
+                        } catch (InvocationTargetException | IllegalAccessException e) {
+                            System.out.println("Awaryjne łączenie");
+                            e.printStackTrace();
                             try {
-                                Method met = clazz.getDeclaredMethod(received, DataInputStream.class);
-                                met.setAccessible(true);
-                                met.invoke(null, new DataInputStream(new ByteArrayInputStream(data)));
-                            } catch (NoSuchMethodException e) {
-
-                            } catch (IllegalAccessException | InvocationTargetException e) {
-                                e.printStackTrace();
+                                socket.close();
+                            } finally {
+                                connect();
+                                break;
                             }
+                        } catch (NoSuchMethodException e) {
                         }
-                        break;
-                }
-            } catch (Throwable e) {
-                System.out.println("Problem z odbieraniem " + e.getClass().getSimpleName());
-                e.printStackTrace();
+                    }
+                    break;
             }
         }
-
     }
 
     public static void getConfiguration(String string){

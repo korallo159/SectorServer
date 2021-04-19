@@ -1,6 +1,7 @@
 package koral.sectorserver;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Queues;
 import koral.sectorserver.commands.*;
 import koral.sectorserver.listeners.*;
 import koral.sectorserver.util.SectorScheduler;
@@ -15,6 +16,7 @@ import org.json.simple.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.SocketException;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -123,9 +125,9 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
 
         registerForwardChannelListener(SocketTestListener.class);
         registerForwardChannelListener(SocketChannelListener.class);
-
-
     }
+    int licz = 0;
+
     @Override
     public void onDisable() {
     }
@@ -348,23 +350,50 @@ public final class SectorServer extends JavaPlugin implements Listener, CommandE
     public static void registerForwardChannelListener(Class<? extends ForwardChannelListener> clazz) {
         SocketClient.listeners.add(clazz);
     }
+
     public static void sendToServer(String subchannel, String server, DataOutputStreamConsumer outConsumer) {
-        try {
-            DataOutputStream out = new DataOutputStream(SocketClient.socket.getOutputStream());
-            out.writeUTF("forward");
-            out.writeUTF(server);
-            out.writeUTF(subchannel);
+        plugin.sendToServer(() -> {
+            try {
+                if (SocketClient.socket.isClosed())
+                    throw new SocketException();
 
-            ByteArrayOutputStream b = new ByteArrayOutputStream();
-            DataOutputStream dataout = new DataOutputStream(b);
+                DataOutputStream out = new DataOutputStream(SocketClient.socket.getOutputStream());
+                out.writeUTF("forward");
+                out.writeUTF(server);
+                out.writeUTF(subchannel);
 
-            outConsumer.accept(dataout);
+                ByteArrayOutputStream b = new ByteArrayOutputStream();
+                DataOutputStream dataout = new DataOutputStream(b);
 
-            byte[] data = b.toByteArray();
-            out.writeShort(data.length);
-            out.write(data);
-        } catch (IOException e) {
-            e.printStackTrace();
+                outConsumer.accept(dataout);
+
+                byte[] data = b.toByteArray();
+                out.writeShort(data.length);
+                out.write(data);
+            } catch (SocketException e) {
+                System.out.println("Soket wyłączony!");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+
+    }
+    private static volatile Queue<Runnable> socketOutQueue = Queues.newConcurrentLinkedQueue();
+    private static volatile boolean canSend = true;
+    private static void sendToServer(Runnable runnable) {
+        synchronized (socketOutQueue) {
+            socketOutQueue.add(runnable);
+            if (canSend) {
+                canSend = false;
+                while (!socketOutQueue.isEmpty())
+                    try {
+                        socketOutQueue.remove().run();
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                    }
+                canSend = true;
+            }
         }
     }
 }
